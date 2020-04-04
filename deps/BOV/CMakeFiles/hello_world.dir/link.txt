@@ -1,0 +1,1 @@
+/usr/bin/cc    CMakeFiles/hello_world.dir/examples/hello_world.c.o  -o examples/hello_world lib/libbov.a deps/glad/libglad.a deps/glfw/src/libglfw3.a /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl /usr/lib/x86_64-linux-gnu/libX11.so -lpthread 

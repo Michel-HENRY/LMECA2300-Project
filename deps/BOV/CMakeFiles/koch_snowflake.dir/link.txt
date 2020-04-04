@@ -1,0 +1,1 @@
+/usr/bin/cc    CMakeFiles/koch_snowflake.dir/examples/koch_snowflake.c.o  -o examples/koch_snowflake lib/libbov.a deps/glad/libglad.a deps/glfw/src/libglfw3.a /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl /usr/lib/x86_64-linux-gnu/libX11.so -lpthread 

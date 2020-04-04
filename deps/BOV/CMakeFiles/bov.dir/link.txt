@@ -1,0 +1,2 @@
+/usr/bin/ar qc lib/libbov.a  CMakeFiles/bov.dir/src/BOV.c.o
+/usr/bin/ranlib lib/libbov.a
