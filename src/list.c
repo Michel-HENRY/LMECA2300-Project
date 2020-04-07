@@ -32,3 +32,18 @@ void List_free(List* list, destructor des) {
 	}
 	free(list);
 }
+
+void List_validation(){
+	List* list = List_new();
+
+	for(int i = 0; i < 5; i++){
+		List_append(list, &i); //Ca crée une liste : [5,5,5,5,5]
+	}
+	ListNode* node = list->head;
+	while(node != NULL){
+		printf("v = %d\n", *(int*)node->v); //La puissance des pointeurs
+		node = node->next;
+	}
+
+	List_free(list,NULL);
+}

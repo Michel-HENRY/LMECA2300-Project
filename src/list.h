@@ -23,5 +23,6 @@ struct ListNode {
 List* List_new();
 void List_append(List *l, void *v);
 void List_free(List*, destructor);
+void List_validation();
 
 #endif

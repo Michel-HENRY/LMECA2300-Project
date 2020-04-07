@@ -63,6 +63,12 @@ Vector* sum(Vector* v1, Vector* v2){
   }
   return w;
 }
+void sum_into(Vector* v1, Vector* v2){
+  check_dim(v1,v2);
+  for(int i = 0; i < v1->DIM; i++){
+    v1->X[i] += v2->X[i];
+  }
+}
 Vector* diff(Vector* v1, Vector* v2){
   check_dim(v1,v2);
   Vector* w = Vector_new(v1->DIM);
@@ -97,6 +103,26 @@ bool equal(Vector* v1, Vector* v2){
   double eps = 1e-8;
   if(dist(v1,v2) < eps) return true;
   return false;
+}
+Vector* times(Vector* v, double a){
+  Vector* result = Vector_new(v->DIM);
+  for(int i = 0; i < v->DIM; i++){
+    result->X[i] = a*v->X[i];
+  }
+  return result;
+}
+void times_into(Vector* v, double a){
+  for(int i = 0; i < v->DIM; i++){
+    v->X[i] *= a;
+  }
+}
+Vector* prod(Vector* v1, Vector* v2){
+  check_dim(v1,v2);
+  Vector* result = Vector_new(v1->DIM);
+  for(int i = 0; i < v1->DIM; i++){
+    result->X[i] = v1->X[i]*v2->X[i];
+  }
+  return result;
 }
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
