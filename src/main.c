@@ -25,7 +25,7 @@ int main(){
   // Parameters
   double rho = 1e3;
   double dynamic_viscosity = 1e-3;
-  double g = 9.81;
+  double g = 0.0;
   int n_p_dim = 25;
   int n_p = n_p_dim*n_p_dim;
   double h = l/n_p_dim; // step between neighboring particles
@@ -90,26 +90,28 @@ int main(){
   // ------------------------------------------------------------------
   Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
 
-
   // ------------------------------------------------------------------
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 1;
+  double tEnd = 0.1;
   double dt = 0.01;
   int iter_max = (int) (tEnd-t)/dt;
   printf("iter max = %d\n",iter_max);
   // // Temporal loop
   Kernel kernel = Lucy;
-  for(int i = 0; i < iter_max; i++){
-    break;
-    printf("-----------\t iter : %d/%d\t-----------\n", i,iter_max);
+  int i = 0;
+  while (t < tEnd){
+    printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
     update_pressure(particles, n_p, rho, g, l);
     time_integration(particles, n_p, kernel, dt, edges);
     show(particles, animation, i, false, true);
     printf("Time integration completed\n");
+
+    i++;
+    t += dt;
   }
   show(particles,animation, iter_max, false, false);
 
@@ -120,11 +122,6 @@ int main(){
   // ------------------------------------------------------------------
   Particles_free(particles, n_p);
   printf("END FREE PARTICLES\n");
-  // for(int i = 0; i < 4; i++){
-  //   Vector_free(vertices[i]);
-  // }
-  // free(vertices);
-  // printf("END FREE VERTICES\n");
   Edges_free(edges);
   printf("END FREE EDGES\n");
   Grid_free(grid);
