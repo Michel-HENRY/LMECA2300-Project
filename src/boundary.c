@@ -100,7 +100,6 @@ void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, int index
 
   double CR = edges->CR;
   C1n -= (1+CR)*(Rp+d); // Pas vrmt d'explication pour le -Rp au lieu de Rp
-  // C1n -= (1+CR)*d;
   for(int i = 0; i < C1->DIM; i++){
     C1->X[i] = C1n*n->X[i] + C1t*t->X[i]; // On change le signe perpeniculaire à la frontière
   }
@@ -125,7 +124,7 @@ void update_velocity(Particle* p, Edges* edges, int index){
   }
 }
 
-void reflective_boundary(Particle** p, int n_p, double dt, Edges* edges){
+void reflective_boundary(Particle** p, int n_p, Edges* edges){
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     int counter = 0;
@@ -149,7 +148,7 @@ void reflective_boundary(Particle** p, int n_p, double dt, Edges* edges){
 
       free(dist_edges);
       counter++;
-      if(counter > 10){break;}
+      if(counter > 100){break;}
     }
   }
 }

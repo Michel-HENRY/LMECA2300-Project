@@ -26,5 +26,5 @@ int indexCPlane(double* dist_edges, int n_e);
 void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, int index);
 void update_velocity(Particle* p, Edges* edges, int index);
 
-void reflective_boundary(Particle** p, int n_p, double dt, Edges* edges);
+void reflective_boundary(Particle** p, int n_p, Edges* edges);
 #endif

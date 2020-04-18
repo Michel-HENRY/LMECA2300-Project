@@ -1,8 +1,5 @@
 #include "time_integration.h"
 
-
-
-
 void update_pressure(Particle** p, int n_p, double rho_0, double g, double H){
   double gamma = 7;
   double c = 1500;
@@ -14,8 +11,34 @@ void update_pressure(Particle** p, int n_p, double rho_0, double g, double H){
 
     double y = pi->fields->x->X[1];
     double Phydro = -rho*g*(H - y);
+    Phydro = 0;
 
     pi->fields->P = Pdyn + Phydro;
+  }
+}
+void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
+  for(int i = 0; i < n_p; i++){
+    Particle* pi = p[i];
+    Vector* ui = pi->fields->u;
+    Vector* corr = Vector_new(ui->DIM);
+    ListNode* node = pi->neighbors->head;
+    while(node != NULL){
+      Particle* pj = node->v;
+      Vector* uj = pj->fields->u;
+      double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h,kernel);
+      double mj = pj->param->mass;
+      double rhoi = pi->param->rho;
+      double rhoj = pj->param->rho;
+
+      for(int d = 0; d < ui->DIM; d++){
+        corr->X[d] += (2*mj)/(rhoi + rhoj)*(uj->X[d] - ui->X[d])*W;
+      }
+      node = node->next;
+    }
+    for(int d = 0; d < ui->DIM; d++){
+      ui->X[d] += eta*corr->X[d];
+    }
+
   }
 }
 double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
@@ -24,7 +47,7 @@ double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
     Particle* pi = p[i];
     double rho = pi->param->rho;
     double divergence_u = div_u(pi,kernel);
-
+    // printf("div u = %f\n", divergence_u);
     rhs[i] = -rho*divergence_u;
   }
   return rhs;
@@ -41,7 +64,9 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
     times_into(grad_Pressure, -1/rho);
-    Vector* laplacian_u = lapl_u(pi,kernel);
+    Vector* laplacian_u = lapl_u_Brookshaw(pi,kernel);
+    // printf("Laplacian %i :\n", i);
+    // Vector_print(laplacian_u);
     times_into(laplacian_u, viscosity);
     Vector* forces = pi->fields->f;
 
@@ -110,12 +135,30 @@ void time_integration_position(Particle** p, int n_p, double dt){
 void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
   Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
   double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
-  // time_integration_mass(p,n_p,rhs_mass,dt);
-  // time_integration_momentum(p,n_p,rhs_momentum,dt);
+  time_integration_mass(p,n_p,rhs_mass,dt);
+  time_integration_momentum(p,n_p,rhs_momentum,dt);
 
   // Check boundary;
   time_integration_position(p,n_p,dt);
-  reflective_boundary(p, n_p, dt, edges);
+  reflective_boundary(p, n_p, edges);
+
+  for(int i = 0; i < n_p; i++){
+    Vector_free(rhs_momentum[i]);
+  }
+  free(rhs_momentum);
+  free(rhs_mass);
+}
+
+void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta){
+  Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
+  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
+  time_integration_mass(p,n_p,rhs_mass,dt);
+  time_integration_momentum(p,n_p,rhs_momentum,dt);
+
+  XSPH_correction(p, n_p, kernel, eta);
+
+  time_integration_position(p,n_p,dt);
+  reflective_boundary(p, n_p, edges);
 
   for(int i = 0; i < n_p; i++){
     Vector_free(rhs_momentum[i]);

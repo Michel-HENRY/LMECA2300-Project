@@ -46,7 +46,7 @@ bov_points_t* load_Domain(double domain[4]){
   data[0][1] = domain[2];   data[1][1] = domain[2];
 
   data[3][0] = domain[0];   data[2][0] = domain[1];
-  data[3][1] = domain[1];   data[2][1] = domain[3];
+  data[3][1] = domain[3];   data[2][1] = domain[3];
 
   bov_points_t *points = bov_points_new(data, 4, GL_STATIC_DRAW);
   free(data);
