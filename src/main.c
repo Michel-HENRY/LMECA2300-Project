@@ -20,17 +20,16 @@ int main(){
   double ly = l;
   // Grid definition
 
-  double timeout = 1;
+  double timeout = 0.01; //Pour accelerer la simu
 
   // Parameters
   double rho_0 = 1;
   double dynamic_viscosity = 1;
   double g = 0.00;
-  int n_p_dim = 15;
+  int n_p_dim = 40;
   int n_p = n_p_dim*n_p_dim;
   double h = l/n_p_dim; // step between neighboring particles
-  double kh = 2*l/n_p_dim;
-  // kh = 6*h;
+  double kh = sqrt(21)*l/n_p_dim;
   double mass = rho_0 * h*h;
   double Rp = h/2;
   double eta = 0.5;
@@ -49,6 +48,9 @@ int main(){
 
       double P = 0;
       double pos[2] = {Rp + i*h,Rp + j*h};
+      if(i == 0){
+        u->X[0] = 1;
+      }
 
       Vector_initialise(x,pos);
       Fields* fields = Fields_new(x,u,f,P);
@@ -59,11 +61,11 @@ int main(){
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
 
-  double L = 1;
+  double L = 1.2;
   double H = 1;
   int n_e = 4;
-  double CF = 0.0;
-  double CR = 1.0;
+  double CF = 0.5;
+  double CR = 0.5;
 
   Vector** vertices = (Vector**) malloc(n_e*sizeof(vertices));
   for(int i = 0; i < n_e; i++){
@@ -86,7 +88,7 @@ int main(){
   // ------------------------ SET Grid --------------------------------
   // ------------------------------------------------------------------
   double extra = 0.0;
-  extra = 5;
+  extra = 0.5;
   Grid* grid = Grid_new(0-extra, L+extra, 0-extra, H+extra, kh);
 
   // ------------------------------------------------------------------
@@ -98,13 +100,13 @@ int main(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 1;
-  double dt = 0.1;
+  double tEnd = 10;
+  double dt = 0.001;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
   // // Temporal loop
-  Kernel kernel = Lucy;
+  Kernel kernel = Cubic;
   int i = 0;
   while (t < tEnd){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
@@ -112,7 +114,8 @@ int main(){
       show(particles, animation, i, false, true);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressure(particles, n_p, rho_0, g, l); // Pressure dyn + P hydro
+    update_pressure(particles, n_p, rho_0, g, l);
+    // time_integration(particles, n_p, kernel, dt, edges);
     time_integration_XSPH(particles, n_p, kernel, dt, edges,eta);
     printf("Time integration completed\n");
 

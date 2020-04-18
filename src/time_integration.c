@@ -26,6 +26,7 @@ void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
       Particle* pj = node->v;
       Vector* uj = pj->fields->u;
       double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h,kernel);
+      // printf("W = %f\n", W);
       double mj = pj->param->mass;
       double rhoi = pi->param->rho;
       double rhoj = pj->param->rho;
@@ -35,6 +36,8 @@ void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
       }
       node = node->next;
     }
+    // printf("corr = \n");
+    // Vector_print(corr);
     for(int d = 0; d < ui->DIM; d++){
       ui->X[d] += eta*corr->X[d];
     }
@@ -61,9 +64,9 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     double viscosity = pi->param->dynamic_viscosity;
 
     Vector* grad_Pressure = grad_P(pi,kernel);
+    times_into(grad_Pressure, -1/rho);
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
-    times_into(grad_Pressure, -1/rho);
     Vector* laplacian_u = lapl_u_Brookshaw(pi,kernel);
     // printf("Laplacian %i :\n", i);
     // Vector_print(laplacian_u);
@@ -71,7 +74,7 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     Vector* forces = pi->fields->f;
 
     rhs[i] = Vector_new(2);
-    sum_into(rhs[i],grad_Pressure);
+    // sum_into(rhs[i],grad_Pressure);
     sum_into(rhs[i],laplacian_u);
     sum_into(rhs[i],forces);
 
