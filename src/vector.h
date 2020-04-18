@@ -16,6 +16,7 @@ struct Vector {
 Vector* Vector_new(int DIM);
 void Vector_initialise(Vector* v, double* X);
 void Vector_free(Vector* v);
+Vector* copy(Vector* v);
 
 // Utils
 void check_dim(Vector* v1, Vector* v2);
@@ -32,6 +33,7 @@ bool equal(Vector* v1, Vector* v2);
 Vector* times(Vector* v, double a);
 void times_into(Vector* v, double a);
 Vector* prod(Vector* v1, Vector* v2);
+void put_zeros(Vector* v);
 
 void Vector_validation();
 

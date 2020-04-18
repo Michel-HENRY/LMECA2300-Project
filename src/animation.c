@@ -17,7 +17,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
   free(data);
 
   animation->domain = load_Domain(domain);
-  bov_points_set_width(animation->domain, 2*R_p);
+  bov_points_set_width(animation->domain, R_p/10);
 
   if (grid != NULL){
     animation->grid = load_Grid(grid);
@@ -31,7 +31,9 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
 void Animation_free(Animation* animation){
   bov_points_delete(animation->bov_particles);
-  bov_points_delete(animation->domain);
+  if(animation->domain = NULL){
+    bov_points_delete(animation->domain);
+  }
 	if(animation->grid != NULL)
 		bov_points_delete(animation->grid);
 	bov_window_delete(animation->window);
@@ -103,7 +105,7 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
 		data[i][5] = 0;
 		data[i][6] = 0;
 		// data[i][7] = 0;
-		colormap(p->fields->P, &data[i][4]); // fill color
+		colormap(p->fields->P/(10*p->param->rho), &data[i][4]); // fill color
 		data[i][7] = 0.8f; // transparency
   }
 }
@@ -117,10 +119,10 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
   free(data);
 
   // To make the screenshot
-  char screenshot_name[64] = "animation_";
-	char int_string[32];
-	sprintf(int_string, "%d", iter);
-	strcat(screenshot_name, int_string);
+  // char screenshot_name[64] = "animation_";
+	// char int_string[32];
+	// sprintf(int_string, "%d", iter);
+	// strcat(screenshot_name, int_string);
 
   bov_window_t* window = animation->window;
   double tbegin = bov_window_get_time(window);
@@ -131,7 +133,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
     bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
     bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
-    if (iter%50 == 0) bov_window_screenshot(window, screenshot_name);
+    // if (iter%50 == 0) bov_window_screenshot(window, screenshot_name);
     bov_window_update(window);
     }
 	}
@@ -141,7 +143,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
       if (animation->grid != NULL && grid)
         bov_lines_draw(window, animation->grid, 0, BOV_TILL_END);
       bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
-      bov_window_screenshot(window, screenshot_name);
+      // bov_window_screenshot(window, screenshot_name);
       bov_window_update_and_wait_events(window);
     }
   }

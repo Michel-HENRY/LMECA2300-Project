@@ -24,6 +24,15 @@ void Vector_initialise(Vector* v, double* X){
     }
   }
 }
+Vector* copy(Vector* v){
+  Vector* u = (Vector*) malloc(sizeof(Vector));
+  u->DIM = v->DIM;
+  u->X = (double*) malloc(u->DIM*sizeof(double));
+  for(int i = 0; i < v->DIM;i++){
+      u->X[i] = v->X[i];
+  }
+  return u;
+}
 void Vector_free(Vector* v){
   free(v->X);
   free(v);
@@ -44,7 +53,7 @@ void check_dim(Vector* v1, Vector* v2){
 void Vector_print(Vector* v){
   printf("\nv = [");
   for(int i = 0; i < v->DIM; i++){
-    printf("%.3f\t", v->X[i]);
+    printf("%e\t", v->X[i]);
   }
   printf("]\n");
 }
@@ -123,6 +132,11 @@ Vector* prod(Vector* v1, Vector* v2){
     result->X[i] = v1->X[i]*v2->X[i];
   }
   return result;
+}
+void put_zeros(Vector* v){
+  for(int i = 0; i < v->DIM; i++){
+    v->X[i] = 0.0;
+  }
 }
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------

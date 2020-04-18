@@ -37,7 +37,6 @@ double eval_Lucy_kernel(double R, double h) {
  else return 0;
 }
 
-// everything here should be double checked because there are still problems with signs
 Vector* grad_kernel(Vector* v1, Vector* v2, double h, Kernel kernel) {
   if(equal(v1,v2)){
     return Vector_new(v1->DIM);

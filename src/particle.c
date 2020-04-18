@@ -22,7 +22,7 @@ void Particle_validation(){
   for(int i = 0; i < n_p_dim; i++){
     for(int j = 0; j < n_p_dim; j++){
       int index = i*n_p_dim + j;
-      Parameters* param = Parameters_new(rho, mass, dynamic_viscosity, h);
+      Parameters* param = Parameters_new(rho, mass, dynamic_viscosity, h, h);
       Vector* x = Vector_new(2);
       Vector* u = Vector_new(2);
       Vector* f = Vector_new(2);
@@ -58,7 +58,7 @@ Grid* Grid_new(double left, double right, double bottom, double top, double h) {
 	// Build the grid
 	int nCellx = ceil((right-left) / h);
 	int nCelly = ceil((top-bottom) / h);
-	// printf("Grid size: (%d,%d)\n", nCellx, nCelly);
+	printf("Grid size: (%d,%d)\n", nCellx, nCelly);
   // Can be replace by a CELL_NEW FUNCION.
 	Cell*** cells = (Cell***) malloc(nCellx * sizeof(Cell**));
 
@@ -140,7 +140,8 @@ void add_neighbors_from_cell(Particle* p, Cell* cell , double h){
 	ListNode *node = cell->particles->head;
 	while (node != NULL) {
 		Particle* q = (Particle*)node->v;
-		if(dist(p->fields->x,q->fields->x) <= h){
+    double dist_pq = dist(p->fields->x,q->fields->x);
+		if(dist_pq <= h && !equal(p->fields->x,q->fields->x)){
       List_append(p->neighbors, q);
     }
 		node = node->next;
@@ -184,12 +185,13 @@ void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter){
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 
-Parameters* Parameters_new(double rho, double mass, double dynamic_viscosity, double h){
+Parameters* Parameters_new(double rho, double mass, double dynamic_viscosity, double h, double Rp){
   Parameters* param = (Parameters*) malloc(sizeof(Parameters));
   param->rho = rho;
   param->mass = mass;
   param->dynamic_viscosity = dynamic_viscosity;
   param->h = h;
+  param->Rp = Rp;
 
   return param;
 }

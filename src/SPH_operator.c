@@ -40,6 +40,8 @@ Vector* grad_P(Particle* pi, Kernel kernel){
 
   ListNode* node = pi->neighbors->head;
   while(node != NULL){
+
+    // Order -1 method
     Particle* pj = node->v;
     double fj = pj->fields->P;
     double mj = pj->param->mass;
@@ -53,9 +55,26 @@ Vector* grad_P(Particle* pi, Kernel kernel){
 
     Vector_free(inner);
     Vector_free(dW);
+
+    // Order 1 method
+    // Particle* pj = node->v;
+    // double fj = pj->fields->P;
+    // double mj = pj->param->mass;
+    // double rho_j = pj->param->rho;
+    // Vector* xj = pj->fields->x;
+    //
+    // Vector* dW = grad_kernel(xi ,xj,h, kernel);
+    // double fj_fi = fj-fi;
+    // double a = (fj_fi/rho_i)*rho_j*mj;
+    // Vector* inner = times(dW,a);
+    // sum_into(grad, inner);
+    //
+    // Vector_free(inner);
+    // Vector_free(dW);
+
     node = node->next;
   }
-  times_into(grad,-1.0/rho_i);
+  times_into(grad,rho_i);
   return grad;
 }
 
@@ -71,25 +90,28 @@ Vector* lapl_u(Particle* pi, Kernel kernel){
   while(node != NULL){
     Particle* pj = node->v;
     double mj = pj->param->mass;
-    double rho_j = pj->param->rho;
+    double rhoj = pj->param->rho;
     Vector* fj = pj->fields->u;
     Vector* xj = pj->fields->x;
 
-    Vector* dW = grad_kernel(xi ,xj,h, kernel);
-    Vector* fi_fj = diff(fi,fj);
-    Vector* xi_xj = diff(xi,xj);
-    double dist_xixj = dist(xi,xj);
-    double dot_prod = dot(xi_xj, dW)/dist_xixj;
-    Vector* inner = times(fi_fj,dot_prod*mj/rho_j);
-    sum_into(lapl,inner);
+    // if(!equal(xi,xj)){
+      Vector* dW = grad_kernel(xi ,xj,h, kernel);
+      Vector* fi_fj = diff(fi,fj);
+      Vector* xi_xj = diff(xi,xj);
+      double dist_xixj = dist(xi,xj); // => Distance nulle
+      double dot_prod = dot(xi_xj, dW)/dist_xixj;
+      double C = dot_prod*mj/rhoj;
+      Vector* inner = times(fi_fj,C);
 
-    Vector_free(dW);
-    Vector_free(fi_fj);
-    Vector_free(xi_xj);
-    Vector_free(inner);
+      sum_into(lapl,inner);
 
+      Vector_free(dW);
+      Vector_free(fi_fj);
+      Vector_free(xi_xj);
+      Vector_free(inner);
+    // }
     node = node->next;
   }
-  times_into(lapl,2);
+  // times_into(lapl,2.0); Not into the article : http://dx.doi.org/10.1016/j.compfluid.2016.02.012
   return lapl;
 }
