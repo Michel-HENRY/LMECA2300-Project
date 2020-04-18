@@ -26,7 +26,7 @@ int main(){
   double rho = 1e3;
   double dynamic_viscosity = 1e-3;
   double g = 0;
-  int n_p_dim = 10;
+  int n_p_dim = 100;
   int n_p = n_p_dim*n_p_dim;
   double h = l/n_p_dim; // step between neighboring particles
   double kh = sqrt(21) * l / n_p_dim;
