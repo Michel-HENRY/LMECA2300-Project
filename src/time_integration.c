@@ -38,7 +38,7 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     double viscosity = pi->param->dynamic_viscosity;
 
     Vector* grad_Pressure = grad_P(pi,kernel);
-    // printf("Gradient de pression : \n");
+    // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
     times_into(grad_Pressure, -1/rho);
     Vector* laplacian_u = lapl_u(pi,kernel);
@@ -83,22 +83,6 @@ void print_momentumMax(Vector** momentum,  int n_p){
   }
   printf("Max Momentum = %f, %f\n", max_x, max_y);
 }
-void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
-  Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
-  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
-  time_integration_mass(p,n_p,rhs_mass,dt);
-  time_integration_momentum(p,n_p,rhs_momentum,dt);
-
-  // Check boundary;
-  reflective_boundary(p, n_p, dt, edges);
-  time_integration_position(p,n_p,dt);
-
-  for(int i = 0; i < n_p; i++){
-    Vector_free(rhs_momentum[i]);
-  }
-  free(rhs_momentum);
-  free(rhs_mass);
-}
 void time_integration_mass(Particle** p, int n_p,double* rhs_mass,double dt){
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
@@ -121,4 +105,21 @@ void time_integration_position(Particle** p, int n_p, double dt){
     sum_into(pi->fields->x, update);
     Vector_free(update);
   }
+}
+
+void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
+  Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
+  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
+  // time_integration_mass(p,n_p,rhs_mass,dt);
+  // time_integration_momentum(p,n_p,rhs_momentum,dt);
+
+  // Check boundary;
+  time_integration_position(p,n_p,dt);
+  reflective_boundary(p, n_p, dt, edges);
+
+  for(int i = 0; i < n_p; i++){
+    Vector_free(rhs_momentum[i]);
+  }
+  free(rhs_momentum);
+  free(rhs_mass);
 }

@@ -17,7 +17,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
   free(data);
 
   animation->domain = load_Domain(domain);
-  bov_points_set_width(animation->domain, R_p/10);
+  bov_points_set_width(animation->domain, 0.01);
 
   if (grid != NULL){
     animation->grid = load_Grid(grid);

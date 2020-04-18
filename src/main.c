@@ -25,8 +25,8 @@ int main(){
   // Parameters
   double rho = 1e3;
   double dynamic_viscosity = 1e-3;
-  double g = 0.0;
-  int n_p_dim = 25;
+  double g = 0;
+  int n_p_dim = 10;
   int n_p = n_p_dim*n_p_dim;
   double h = l/n_p_dim; // step between neighboring particles
   double kh = sqrt(21) * l / n_p_dim;
@@ -45,8 +45,10 @@ int main(){
       Vector* x = Vector_new(2);
       Vector* u = Vector_new(2);
       Vector* f = Vector_new(2);
-      // double  P = rho*g*(l - j*h);
-      double P = 0;
+      u->X[0] = 1.3/2;
+      // u->X[1] = 0.7/2;
+      double  P = rho*g*(l - j*h);
+      // double P = 0;
       double pos[2] = {Rp + i*h,Rp + j*h};
 
       Vector_initialise(x,pos);
@@ -57,19 +59,21 @@ int main(){
   // ------------------------------------------------------------------
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
-  double extra = 0.0;
+
+  double L = 1.1;
+  double H = 1.1;
   int n_e = 4;
-  double CF = 0.3;
-  double CR = 0.7;
+  double CF = 0.0;
+  double CR = 1.0;
 
   Vector** vertices = (Vector**) malloc(n_e*sizeof(vertices));
   for(int i = 0; i < n_e; i++){
     vertices[i] = Vector_new(2);
   }
-  vertices[0]->X[0] = 0;                vertices[2]->X[0] = l+extra;
-  vertices[0]->X[1] = 0;                vertices[2]->X[1] = ly+extra;
-  vertices[1]->X[0] = l+extra;          vertices[3]->X[0] = 0;
-  vertices[1]->X[1] = 0;                vertices[3]->X[1] = ly+extra;
+  vertices[0]->X[0] = 0;                vertices[2]->X[0] = L;
+  vertices[0]->X[1] = 0;                vertices[2]->X[1] = H;
+  vertices[1]->X[0] = L;                vertices[3]->X[0] = 0;
+  vertices[1]->X[1] = 0;                vertices[3]->X[1] = H;
 
 
   Vector** edge = (Vector**) malloc(n_e*2*sizeof(vertices));
@@ -78,12 +82,13 @@ int main(){
     edge[2*i+1] = vertices[(i+1)%n_e];
   }
   Edges* edges = Edges_new(n_e, edge, CR,CF);
-  double domain[4] = {0,l+extra,0,ly+extra};
+  double domain[4] = {0,L,0,H};
   // ------------------------------------------------------------------
   // ------------------------ SET Grid --------------------------------
   // ------------------------------------------------------------------
+  double extra = 0.0;
   extra = ly/2;
-  Grid* grid = Grid_new(-extra, l+extra, -extra, l+extra, kh);
+  Grid* grid = Grid_new(0-extra, L+extra, -extra, H+extra, kh);
 
   // ------------------------------------------------------------------
   // ------------------------ SET Animation ---------------------------
@@ -94,20 +99,22 @@ int main(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 0.1;
-  double dt = 0.01;
+  double tEnd = 50;
+  double dt = 0.05;
   int iter_max = (int) (tEnd-t)/dt;
+  int output = 1;
   printf("iter max = %d\n",iter_max);
   // // Temporal loop
   Kernel kernel = Lucy;
   int i = 0;
   while (t < tEnd){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
+    if (i%output == 0)
+      show(particles, animation, i, false, true);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressure(particles, n_p, rho, g, l);
+    // update_pressure(particles, n_p, rho, g, l); // Pressure dyn + P hydro
     time_integration(particles, n_p, kernel, dt, edges);
-    show(particles, animation, i, false, true);
     printf("Time integration completed\n");
 
     i++;
@@ -126,7 +133,7 @@ int main(){
   printf("END FREE EDGES\n");
   Grid_free(grid);
   printf("END FREE GRID\n");
-  Animation_free(animation);
-  printf("END FREE ANIMATION\n");
+  // Animation_free(animation);
+  // printf("END FREE ANIMATION\n");
   return EXIT_SUCCESS;
 }
