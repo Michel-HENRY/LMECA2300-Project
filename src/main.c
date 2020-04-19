@@ -25,7 +25,7 @@ int main(){
   // Parameters
   double rho_0 = 1e3;
   double dynamic_viscosity = 1e-6;
-  double g = 0;
+  double g = 9.81;
   int n_p_dim = 75;
   int n_p = n_p_dim*n_p_dim;
   double h = l/n_p_dim; // step between neighboring particles
@@ -46,13 +46,13 @@ int main(){
       Vector* u = Vector_new(2);
       Vector* f = Vector_new(2);
 
-      f->X[1] = -g;
+      // f->X[1] = -g;
 
       double pos[2] = {Rp + i*h,Rp + j*h};
       double P = 0;
-      if(i == 0){
-        u->X[0] = 2*(1 - pos[1]*pos[1]);
-      }
+      // if(i == 0){
+      //   u->X[0] = 2*(1 - pos[1]*pos[1]);
+      // }
 
       Vector_initialise(x,pos);
       Fields* fields = Fields_new(x,u,f,P);
@@ -116,7 +116,8 @@ int main(){
       show(particles, animation, i, false, true);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressure(particles, n_p, rho_0);
+    update_pressureMod(particles, n_p, rho_0,g,ly);
+    printf("P = %f\n",particles[0]->fields->P);
     // time_integration(particles, n_p, kernel, dt, edges);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     printf("Time integration completed\n");

@@ -68,8 +68,7 @@ void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H)
     double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
 
     double y = pi->fields->x->X[1];
-    double Phydro = -rho*g*(H - y);
-    Phydro = 0;
+    double Phydro = rho*g*(H - y);
 
     pi->fields->P = Pdyn + Phydro;
   }
