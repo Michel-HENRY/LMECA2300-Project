@@ -79,7 +79,8 @@ double derivative_Cubic_kernel(double R,double h){
 	 double dW = 0;
    double eps = 1e-8;
 	 if (R >= -eps && R <= 1+eps){
-     dW = -12*R+24*pow(R,2)-12*pow(R,3);
+     // dW = -12*R+24*pow(R,2)-12*pow(R,3);
+     dW = 3*(1 - pow(R,2) - 4*pow(R,3));
    }
 	 return alpha*dW;
  }

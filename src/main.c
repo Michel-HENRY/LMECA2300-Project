@@ -20,13 +20,13 @@ int main(){
   double ly = l;
   // Grid definition
 
-  double timeout = 0.01; //Pour accelerer la simu
+  double timeout = 0.001; //Pour accelerer la simu
 
   // Parameters
-  double rho_0 = 1;
-  double dynamic_viscosity = 1;
-  double g = 0.00;
-  int n_p_dim = 40;
+  double rho_0 = 1e3;
+  double dynamic_viscosity = 1e-6;
+  double g = 0;
+  int n_p_dim = 75;
   int n_p = n_p_dim*n_p_dim;
   double h = l/n_p_dim; // step between neighboring particles
   double kh = sqrt(21)*l/n_p_dim;
@@ -46,10 +46,12 @@ int main(){
       Vector* u = Vector_new(2);
       Vector* f = Vector_new(2);
 
-      double P = 0;
+      f->X[1] = -g;
+
       double pos[2] = {Rp + i*h,Rp + j*h};
+      double P = 0;
       if(i == 0){
-        u->X[0] = 1;
+        u->X[0] = 2*(1 - pos[1]*pos[1]);
       }
 
       Vector_initialise(x,pos);
@@ -61,7 +63,7 @@ int main(){
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
 
-  double L = 1.2;
+  double L = 1.5;
   double H = 1;
   int n_e = 4;
   double CF = 0.5;
@@ -100,8 +102,8 @@ int main(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 10;
-  double dt = 0.001;
+  double tEnd = 100;
+  double dt = 0.1;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
@@ -114,9 +116,9 @@ int main(){
       show(particles, animation, i, false, true);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressure(particles, n_p, rho_0, g, l);
+    update_pressure(particles, n_p, rho_0);
     // time_integration(particles, n_p, kernel, dt, edges);
-    time_integration_XSPH(particles, n_p, kernel, dt, edges,eta);
+    time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     printf("Time integration completed\n");
 
     i++;
