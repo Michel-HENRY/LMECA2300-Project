@@ -147,10 +147,11 @@ double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
 
 Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** rhs = (Vector**) malloc(sizeof(Vector*)*n_p);
+  Vector** force_surface = get_force_surface(p, n_p, kernel);
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     double rho = pi->param->rho;
-    double viscosity = pi->param->dynamic_viscosity;
+    double viscosity = pi->param->dynamic_viscosity/pi->param->rho;
     //TODO : Fix gradient de pression
     // printf("P = %f\n", pi->fields->P);
     Vector* grad_Pressure = grad_P(pi,kernel);
@@ -162,7 +163,7 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     // Vector_print(laplacian_u);
     times_into(laplacian_u, viscosity);
     Vector* forces = pi->fields->f;
-    times_into(forces, 1/rho);
+    sum_into(forces, force_surface[i]);
 
     rhs[i] = Vector_new(2);
     sum_into(rhs[i],grad_Pressure);
@@ -171,7 +172,9 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
 
    Vector_free(grad_Pressure);
    Vector_free(laplacian_u);
+   Vector_free(force_surface[i]);
   }
+  free(force_surface);
   return rhs;
 }
 Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){

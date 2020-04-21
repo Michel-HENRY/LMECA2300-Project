@@ -27,7 +27,7 @@ int dam_break(){
   double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
   double mass = rho_0 * h*h;              // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
-  double eta = 0.5;                       // XSPH parameter from 0 to 1
+  double eta = 0.0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
   double tension = 72*1e-3;               // Tension de surface de l'eau
   double P0 = 1e5;                        // Pression atmosphérique
@@ -116,10 +116,7 @@ int dam_break(){
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
     update_pressureDam(particles, n_p, rho_0, g, H);
-    // update_pressureMod(particles, n_p, rho_0);
-    // update_pressure(particles, n_p, rho_0,g, H);
-    // update_pressureEq(particles, n_p); // Impose the pressure to P0
-    printf("P = %f\n",particles[0]->fields->P);
+    // time_integration(particles, n_p, kernel, dt, edges);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     if (i%output == 0)
       show(particles, animation, i, false, false);
