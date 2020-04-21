@@ -73,7 +73,6 @@ Vector* grad_P(Particle* pi, Kernel kernel){
 
     node = node->next;
   }
-  times_into(grad,rho_i);
   return grad;
 }
 
@@ -148,6 +147,6 @@ Vector* lapl_u_Brookshaw(Particle* pi, Kernel kernel){
     // }
     node = node->next;
   }
-  // times_into(lapl,2.0); Not into the article : http://dx.doi.org/10.1016/j.compfluid.2016.02.012
+  times_into(lapl,2.0); //Not into the article : http://dx.doi.org/10.1016/j.compfluid.2016.02.012
   return lapl;
 }

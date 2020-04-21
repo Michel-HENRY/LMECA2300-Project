@@ -1,6 +1,17 @@
 #include "animation.h"
 
 
+double P_max(Particle** p, int n_p){
+  double Pmax = p[0]->fields->P;
+  for(int i = 1; i < n_p ; i++){
+    if(p[i]->fields->P > Pmax){
+      Pmax = p[i]->fields->P;
+    }
+  }
+  return Pmax;
+}
+
+
 Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double domain[4]){
   Animation* animation = (Animation*) malloc(sizeof(Animation));
 
@@ -17,7 +28,8 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
   free(data);
 
   animation->domain = load_Domain(domain);
-  bov_points_set_width(animation->domain, 0.01);
+  bov_points_set_width(animation->domain, 0.0005);
+  bov_points_set_color(animation->domain,(GLfloat[]){1.0, 0.0, 0.0, 1.0});
 
   if (grid != NULL){
     animation->grid = load_Grid(grid);
@@ -105,7 +117,7 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
 		data[i][5] = 0;
 		data[i][6] = 0;
 		// data[i][7] = 0;
-		colormap(p->fields->P/10000, &data[i][4]); // fill color
+		colormap(p->fields->P/P_max(particles, n_p), &data[i][4]); // fill color
 		data[i][7] = 0.8f; // transparency
   }
 }
@@ -146,6 +158,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
       if (animation->grid != NULL && grid)
         bov_lines_draw(window, animation->grid, 0, BOV_TILL_END);
       bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
+      bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
       bov_window_screenshot(window, screenshot_name);
       bov_window_update_and_wait_events(window);
     }

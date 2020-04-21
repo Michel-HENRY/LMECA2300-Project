@@ -6,6 +6,7 @@
 #include "SPH_operator.h"
 #include "kernel.h"
 #include "boundary.h"
+#include "free_surface.h"
 
 double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel);
 Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel);
