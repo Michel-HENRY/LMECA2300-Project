@@ -5,21 +5,21 @@
 #include "time_integration.h"
 #include "boundary.h"
 
-int hydrostatic_equilibrium();
+int dam_break();
 
 int main(){
-  hydrostatic_equilibrium();
+  dam_break();
 }
 
-int hydrostatic_equilibrium(){
+int dam_break(){
   double lx = 1;                         // Longueur du domaine de particule
-  double ly = 1;                          // Hauteur du domaine de particle
+  double ly = 2;                          // Hauteur du domaine de particle
   int n_p_dim = 30;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
   double dynamic_viscosity = 1e-6;        // Viscosité dynamique
-  double g = 0.00;                        // Gravité
+  double g = 9.81;                        // Gravité
   int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*ly;
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
@@ -61,11 +61,11 @@ int hydrostatic_equilibrium(){
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
 
-  double L = 1;
-  double H = 1;
+  double L = 4;
+  double H = 4;
   int n_e = 4;
   double CF = 0.0;
-  double CR = 0.0;
+  double CR = 1.0;
 
   Vector** vertices = (Vector**) malloc(n_e*sizeof(vertices));
   for(int i = 0; i < n_e; i++){
@@ -101,7 +101,7 @@ int hydrostatic_equilibrium(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd =1;
+  double tEnd = 1;
   double dt = 0.0001;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
@@ -115,10 +115,10 @@ int hydrostatic_equilibrium(){
       show(particles, animation, i, false, false);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    // update_pressureDam(particles, n_p, rho_0, g, H);
+    update_pressureDam(particles, n_p, rho_0, g, H);
     // update_pressureMod(particles, n_p, rho_0);
     // update_pressure(particles, n_p, rho_0,g, H);
-    update_pressureEq(particles, n_p); // Impose the pressure to P0
+    // update_pressureEq(particles, n_p); // Impose the pressure to P0
     printf("P = %f\n",particles[0]->fields->P);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     if (i%output == 0)
