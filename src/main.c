@@ -5,8 +5,13 @@
 #include "time_integration.h"
 #include "boundary.h"
 
+int hydrostatic_equilibrium();
+
 int main(){
-  //particle domain
+  hydrostatic_equilibrium();
+}
+
+int hydrostatic_equilibrium(){
   double lx = 1;                         // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
   int n_p_dim = 30;
