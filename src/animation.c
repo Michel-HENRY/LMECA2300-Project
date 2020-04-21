@@ -1,14 +1,25 @@
 #include "animation.h"
 
 
-double P_max(Particle** p, int n_p){
+static double P_max(Particle** p, int n_p){
   double Pmax = p[0]->fields->P;
   for(int i = 1; i < n_p ; i++){
+    // printf("i = %d/%d\n",i,n_p);
     if(p[i]->fields->P > Pmax){
       Pmax = p[i]->fields->P;
     }
   }
   return Pmax;
+}
+static double P_min(Particle** p, int n_p){
+  double Pmin = p[0]->fields->P;
+  for(int i = 1; i < n_p ; i++){
+    // printf("i = %d/%d\n",i,n_p);
+    if(p[i]->fields->P < Pmin){
+      Pmin = p[i]->fields->P;
+    }
+  }
+  return Pmin;
 }
 
 
@@ -107,7 +118,10 @@ static void colormap(float v, float color[3]){
 }
 
 static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
+  double Pmax = P_max(particles, n_p);
+  double Pmin = P_min(particles, n_p);
 	for(int i=0; i<n_p; i++) {
+    // printf("i = %d/%d\n",i,n_p);
     Particle* p = particles[i];
 		data[i][0] = p->fields->x->X[0]; // x (rand between -100 and 100)
 		data[i][1] = p->fields->x->X[1]; // y (rand between -100 and 100)
@@ -117,7 +131,15 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
 		data[i][5] = 0;
 		data[i][6] = 0;
 		// data[i][7] = 0;
-		colormap(p->fields->P/P_max(particles, n_p), &data[i][4]); // fill color
+    double P = p->fields->P;
+    double field;
+    if(Pmax == Pmin){
+      field = P-Pmin;
+    }
+    else{
+      field = (P - Pmin)/(Pmax - Pmin);
+    }
+		colormap(field, &data[i][4]); // fill color
     // colormap(p->fields->Cs, &data[i][4]);
 		data[i][7] = 0.8f; // transparency
   }
@@ -141,13 +163,14 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
   double tbegin = bov_window_get_time(window);
   double timeout = animation->timeout;
 
+
   if(!wait){
     while(bov_window_get_time(window) - tbegin < timeout){
       if(animation->grid != NULL && grid)
 				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
     bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
     bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
-    if (iter%10 == 0) {
+    if (iter%500 == 0) {
       bov_window_screenshot(window, screenshot_name);
     }
     bov_window_update(window);

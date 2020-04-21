@@ -57,8 +57,13 @@ static void print_momentumMax(Vector** momentum,  int n_p){
 // ------------------------------------------------------------------
 // ------------------------ Compute all the rhs ---------------------
 // ------------------------------------------------------------------
-
-void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H, double P0){
+void update_pressureEq(Particle** p, int n_p){
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    pi->fields->P = pi->param->P0;
+  }
+}
+void update_pressure(Particle** p, int n_p, double rho_0, double g, double H){
   double gamma = 7;
   double c = 1500;
   double B = rho_0*c*c/gamma;
@@ -70,10 +75,10 @@ void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H,
     double y = pi->fields->x->X[1];
     double Phydro = rho*g*(H - y);
 
-    pi->fields->P = (Pdyn - P0) - Phydro;
+    pi->fields->P = (Pdyn + pi->param->P0) + Phydro;
   }
 }
-void update_pressureDam(Particle** p, int n_p, double rho_0, double g){
+void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H){
 
   double B = 0.85*1e5;
   double gamma = 7;
@@ -82,10 +87,13 @@ void update_pressureDam(Particle** p, int n_p, double rho_0, double g){
     double rho = pi->param->rho;
     double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
 
-    pi->fields->P = Pdyn;
+    double y = pi->fields->x->X[1];
+    double Phydro = rho*g*(H - y);
+
+    pi->fields->P = (Pdyn + pi->param->P0) + Phydro;
   }
 }
-void update_pressure(Particle** p, int n_p, double rho_0){
+void update_pressureMod(Particle** p, int n_p, double rho_0){
     double gamma = 7;
     double c = 1500;
     double B = rho_0*c*c/gamma;
@@ -94,7 +102,7 @@ void update_pressure(Particle** p, int n_p, double rho_0){
       double rho = pi->param->rho;
       double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
 
-      pi->fields->P = Pdyn;
+      pi->fields->P = Pdyn + pi->param->P0;
     }
 }
 void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
@@ -146,7 +154,7 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     //TODO : Fix gradient de pression
     // printf("P = %f\n", pi->fields->P);
     Vector* grad_Pressure = grad_P(pi,kernel);
-    times_into(grad_Pressure, -1/rho);
+    times_into(grad_Pressure, -1);
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
     Vector* laplacian_u = lapl_u_Brookshaw(pi,kernel);
@@ -313,7 +321,7 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);
   time_integration_momentum(p,n_p,rhs_momentum,dt);
 
-  XSPH_correction(p, n_p, kernel, eta);
+  // XSPH_correction(p, n_p, kernel, eta);
 
   time_integration_position(p,n_p,dt);
   reflective_boundary(p, n_p, edges);
