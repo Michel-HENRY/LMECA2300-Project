@@ -58,7 +58,7 @@ void print_momentumMax(Vector** momentum,  int n_p){
 // ------------------------ Compute all the rhs ---------------------
 // ------------------------------------------------------------------
 
-void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H){
+void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H, double P0){
   double gamma = 7;
   double c = 1500;
   double B = rho_0*c*c/gamma;
@@ -70,7 +70,7 @@ void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H)
     double y = pi->fields->x->X[1];
     double Phydro = rho*g*(H - y);
 
-    pi->fields->P = Pdyn + Phydro;
+    pi->fields->P = (Pdyn - P0) - Phydro;
   }
 }
 void update_pressure(Particle** p, int n_p, double rho_0){

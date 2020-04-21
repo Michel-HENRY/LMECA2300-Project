@@ -22,7 +22,7 @@ void Particle_validation(){
   for(int i = 0; i < n_p_dim; i++){
     for(int j = 0; j < n_p_dim; j++){
       int index = i*n_p_dim + j;
-      Parameters* param = Parameters_new(rho, mass, dynamic_viscosity, h, h, 0,0);
+      Parameters* param = Parameters_new(rho, mass, dynamic_viscosity, h, h, 0,0,0);
       Vector* x = Vector_new(2);
       Vector* u = Vector_new(2);
       Vector* f = Vector_new(2);
@@ -185,7 +185,7 @@ void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter){
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 
-Parameters* Parameters_new(double rho, double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold){
+Parameters* Parameters_new(double rho, double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0){
   Parameters* param = (Parameters*) malloc(sizeof(Parameters));
   param->rho = rho;
   param->mass = mass;
@@ -194,6 +194,7 @@ Parameters* Parameters_new(double rho, double mass, double dynamic_viscosity, do
   param->Rp = Rp;
   param->tension = tension;
   param->treshold = treshold;
+  param->P0 = P0;
   return param;
 }
 void Parameters_free(Parameters* param){

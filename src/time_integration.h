@@ -19,7 +19,7 @@ void time_integration_mass(Particle** p, int n_p,double* rhs_mass,double dt);
 void time_integration_momentum(Particle** p, int n_p, Vector** rhs_momentum,double dt);
 void time_integration_position(Particle** p, int n_p, double dt);
 
-void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H);
+void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H, double P0);
 void update_pressure(Particle** p, int n_p, double rho_0);
 void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta);
 void CSPM_density(Particle** p, int n_p, Kernel kernel);

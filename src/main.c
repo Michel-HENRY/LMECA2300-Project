@@ -23,6 +23,7 @@ int main(){
   double eta = 0.5;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
   double tension = 72*1e-3;               // Tension de surface de l'eau
+  double P0 = 0;                        // Pression atmosphérique
 
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
@@ -31,12 +32,12 @@ int main(){
   for(int i = 0; i < n_p_dim; i++){
     for(int j = 0; j < n_p_dim; j++){
       int index = i*n_p_dim + j;
-      Parameters* param = Parameters_new(rho_0, mass, dynamic_viscosity, kh, Rp, tension, treshold);
+      Parameters* param = Parameters_new(rho_0, mass, dynamic_viscosity, kh, Rp, tension, treshold,P0);
       Vector* x = Vector_new(2);
       Vector* u = Vector_new(2);
       Vector* f = Vector_new(2);
 
-      f->X[1] = -g;
+      // f->X[1] = -g;
 
       double pos[2] = {Rp + i*h ,Rp + j*h};
       double P = 0;
@@ -86,15 +87,15 @@ int main(){
   // ------------------------------------------------------------------
   // ------------------------ SET Animation ---------------------------
   // ------------------------------------------------------------------
-  double timeout = 0.5;                 // Durée d'une frame
+  double timeout = 0.001;                 // Durée d'une frame
   Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
 
   // ------------------------------------------------------------------
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 0.1;
-  double dt = 0.001;
+  double tEnd = 5;
+  double dt = 0.0001;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
@@ -105,7 +106,8 @@ int main(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
 
     update_cells(grid, particles, n_p);
-    update_neighbors(grid, particles, n_p, i);
+    // update_neighbors(grid, particles, n_p, i);
+    update_pressureMod(particles, n_p, rho_0,g, H,P0);
     update_pressure(particles, n_p, rho_0);
     printf("P = %f\n",particles[0]->fields->P);
     // time_integration(particles, n_p, kernel, dt, edges);
