@@ -37,7 +37,7 @@ int main(){
       Vector* u = Vector_new(2);
       Vector* f = Vector_new(2);
 
-      // f->X[1] = -g;
+      f->X[1] = -g;
 
       double pos[2] = {Rp + i*h ,Rp + j*h};
       double P = 0;
@@ -107,8 +107,8 @@ int main(){
 
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressureMod(particles, n_p, rho_0,g, H,P0);
-    // update_pressure(particles, n_p, rho_0);
+    // update_pressureMod(particles, n_p, rho_0,g, H,P0);
+    update_pressure(particles, n_p, rho_0);
     printf("P = %f\n",particles[0]->fields->P);
     // time_integration(particles, n_p, kernel, dt, edges);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);

@@ -4,7 +4,7 @@
 // ------------------------ Print functions -------------------------
 // ------------------------------------------------------------------
 
-void print_vMax(Particle** p, int n_p){
+static void print_vMax(Particle** p, int n_p){
   double max_y = 0;
 
   for(int i = 0; i < n_p; i++){
@@ -15,7 +15,7 @@ void print_vMax(Particle** p, int n_p){
   }
   printf("Max Velocity = %f\n", max_y);
 }
-void print_rhoMax(Particle** p, int n_p){
+static void print_rhoMax(Particle** p, int n_p){
   double max_y = p[0]->param->rho;
 
   for(int i = 1; i < n_p; i++){
@@ -26,7 +26,7 @@ void print_rhoMax(Particle** p, int n_p){
   }
   printf("Max Density = %f\n", max_y);
 }
-void print_rhoMin(Particle** p, int n_p){
+static void print_rhoMin(Particle** p, int n_p){
   double min_y = p[0]->param->rho;
 
   for(int i = 1; i < n_p; i++){
@@ -37,7 +37,7 @@ void print_rhoMin(Particle** p, int n_p){
   }
   printf("Min Density = %f\n", min_y);
 }
-void print_momentumMax(Vector** momentum,  int n_p){
+static void print_momentumMax(Vector** momentum,  int n_p){
   double max_y = 0;
   double max_x = 0;
   for(int i = 0; i < n_p; i++){
@@ -73,11 +73,22 @@ void update_pressureMod(Particle** p, int n_p, double rho_0, double g, double H,
     pi->fields->P = (Pdyn - P0) - Phydro;
   }
 }
+void update_pressureDam(Particle** p, int n_p, double rho_0, double g){
+
+  double B = 0.85*1e5;
+  double gamma = 7;
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    double rho = pi->param->rho;
+    double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
+
+    pi->fields->P = Pdyn;
+  }
+}
 void update_pressure(Particle** p, int n_p, double rho_0){
     double gamma = 7;
     double c = 1500;
     double B = rho_0*c*c/gamma;
-    B = 1;
     for(int i = 0; i < n_p ; i++){
       Particle* pi = p[i];
       double rho = pi->param->rho;
@@ -335,26 +346,25 @@ void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edge
   free(rhs_mass);
 }
 
-
-// void validation(){
+// int main(){
 //   //particle domain
-//   double l = 1.0;
-//   double ly = l;
-//   // Grid definition
-//
-//   double timeout = 0.001; //Pour accelerer la simu
+//   double l = 1;                         // Longueur du domaine de particule
+//   double ly = l;                          // Hauteur du domaine de particle
 //
 //   // Parameters
-//   double rho_0 = 1e3;
-//   double dynamic_viscosity = 1e-6;
-//   double g = 9.81;
-//   int n_p_dim = 75;
-//   int n_p = n_p_dim*n_p_dim;
-//   double h = l/n_p_dim; // step between neighboring particles
-//   double kh = sqrt(21)*l/n_p_dim;
-//   double mass = rho_0 * h*h;
-//   double Rp = h/2;
-//   double eta = 0.5;
+//   double rho_0 = 1e3;                     // Densité initiale
+//   double dynamic_viscosity = 1e-6;        // Viscosité dynamique
+//   double g = 9.81;                        // Gravité
+//   int n_p_dim = 50;                       // Nombre de particule par dimension
+//   int n_p = n_p_dim*n_p_dim;              // Nombre de particule total
+//   double h = l/n_p_dim;                   // step between neighboring particles
+//   double kh = sqrt(21)*l/n_p_dim;         // Rayon du compact pour l'approximation
+//   double mass = rho_0 * h*h;              // Masse d'une particule, constant
+//   double Rp = h/2;                        // Rayon d'une particule
+//   double eta = 0.5;                       // XSPH parameter from 0 to 1
+//   double treshold = 20;                   // Critère pour la surface libre
+//   double tension = 72*1e-3;               // Tension de surface de l'eau
+//   double P0 = 0;                        // Pression atmosphérique
 //
 //   // ------------------------------------------------------------------
 //   // ------------------------ SET Particles ---------------------------
@@ -363,17 +373,17 @@ void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edge
 //   for(int i = 0; i < n_p_dim; i++){
 //     for(int j = 0; j < n_p_dim; j++){
 //       int index = i*n_p_dim + j;
-//       Parameters* param = Parameters_new(rho_0, mass, dynamic_viscosity, kh, Rp);
+//       Parameters* param = Parameters_new(rho_0, mass, dynamic_viscosity, kh, Rp, tension, treshold,P0);
 //       Vector* x = Vector_new(2);
 //       Vector* u = Vector_new(2);
 //       Vector* f = Vector_new(2);
 //
 //       // f->X[1] = -g;
 //
-//       double pos[2] = {Rp + i*h,Rp + j*h};
+//       double pos[2] = {Rp + i*h ,Rp + j*h};
 //       double P = 0;
 //       // if(i == 0){
-//       //   u->X[0] = 2*(1 - pos[1]*pos[1]);
+//         // u->X[0] = -2*(1 - pos[1]*pos[1]);
 //       // }
 //
 //       Vector_initialise(x,pos);
@@ -385,11 +395,11 @@ void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edge
 //   // ------------------------ SET Edges -------------------------------
 //   // ------------------------------------------------------------------
 //
-//   double L = 1.5;
+//   double L = 1;
 //   double H = 1;
 //   int n_e = 4;
-//   double CF = 0.5;
-//   double CR = 0.5;
+//   double CF = 0.0;
+//   double CR = 1.0;
 //
 //   Vector** vertices = (Vector**) malloc(n_e*sizeof(vertices));
 //   for(int i = 0; i < n_e; i++){
@@ -418,14 +428,15 @@ void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edge
 //   // ------------------------------------------------------------------
 //   // ------------------------ SET Animation ---------------------------
 //   // ------------------------------------------------------------------
+//   double timeout = 0.001;                 // Durée d'une frame
 //   Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
 //
 //   // ------------------------------------------------------------------
 //   // ------------------------ Start integration -----------------------
 //   // ------------------------------------------------------------------
 //   double t = 0;
-//   double tEnd = 0.2;
-//   double dt = 0.1;
+//   double tEnd = 5;
+//   double dt = 0.0001;
 //   int iter_max = (int) (tEnd-t)/dt;
 //   int output = 1;
 //   printf("iter max = %d\n",iter_max);
@@ -434,20 +445,22 @@ void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edge
 //   int i = 0;
 //   while (t < tEnd){
 //     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
-//     if (i%output == 0)
-//       show(particles, animation, i, false, true);
+//
 //     update_cells(grid, particles, n_p);
 //     update_neighbors(grid, particles, n_p, i);
-//     update_pressureMod(particles, n_p, rho_0,g,ly);
+//     update_pressureMod(particles, n_p, rho_0,g, H,P0);
+//     // update_pressure(particles, n_p, rho_0);
 //     printf("P = %f\n",particles[0]->fields->P);
 //     // time_integration(particles, n_p, kernel, dt, edges);
 //     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
+//     if (i%output == 0)
+//       show(particles, animation, i, false, false);
 //     printf("Time integration completed\n");
 //
 //     i++;
 //     t += dt;
 //   }
-//   show(particles,animation, iter_max, false, false);
+//   show(particles,animation, iter_max, true, false);
 //
 //
 //

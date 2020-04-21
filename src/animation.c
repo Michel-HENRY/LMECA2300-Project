@@ -118,6 +118,7 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
 		data[i][6] = 0;
 		// data[i][7] = 0;
 		colormap(p->fields->P/P_max(particles, n_p), &data[i][4]); // fill color
+    // colormap(p->fields->Cs, &data[i][4]);
 		data[i][7] = 0.8f; // transparency
   }
 }
