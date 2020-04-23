@@ -13,4 +13,5 @@ double div_u(Particle* pi, Kernel kernel);
 Vector* grad_P(Particle* pi, Kernel kernel);
 Vector* lapl_u(Particle* pi, Kernel kernel);
 Vector* lapl_u_Brookshaw(Particle* pi, Kernel kernel);
+void kernel_validation();
 #endif

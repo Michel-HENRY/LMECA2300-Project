@@ -10,7 +10,7 @@
 
 // Validation function
 int dam_break();
-int one_particle();
+int boundary_validation();
 int SPH_operator_validation();
 
 // Useful function to create the usual sructures
@@ -18,8 +18,10 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  dam_break();
-  // one_particle();
+  // dam_break();
+  boundary_validation();
+  // SPH_operator_validation();
+  // kernel_validation();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
   int n_p = n_p_dim_x*n_p_dim_y;
@@ -84,10 +86,10 @@ Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain
   return edges;
 }
 
-int one_particle(){
+int boundary_validation(){
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 10;                       // Nombre moyen de particule par dimension
+  int n_p_dim = 100;                       // Nombre moyen de particule par dimension
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
@@ -140,7 +142,7 @@ int one_particle(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 1;
+  double tEnd = 10;
   double dt = 0.001;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
@@ -277,10 +279,10 @@ int dam_break(){
 int SPH_operator_validation(){
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 10;                       // Nombre moyen de particule par dimension
+  int n_p_dim = 75;                       // Nombre moyen de particule par dimension
 
   // Parameters
-  double rho_0 = 1e3;                     // Densité initiale
+  double rho_0 = 1;                       // Densité initiale
   double dynamic_viscosity = 0;           // Viscosité dynamique
   double g = 0.00;                        // Gravité
   int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
@@ -288,7 +290,7 @@ int SPH_operator_validation(){
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
   double h = lx/n_p_dim_x;                // step between neighboring particles
   double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
-  double mass = rho_0 * h*h;              // Masse d'une particule, constant
+  double mass = rho_0*lx*ly/n_p;           // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
@@ -300,6 +302,11 @@ int SPH_operator_validation(){
   // ------------------------------------------------------------------
   Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
+
+  // Impose linear gradient pressure :
+  for(int i = 0; i < n_p ; i ++){
+    particles[i]->fields->P = particles[i]->fields->x->X[1] + 100; // P = y + 100
+  }
 
   // ------------------------------------------------------------------
   // ------------------------ SET Edges -------------------------------
@@ -331,34 +338,54 @@ int SPH_operator_validation(){
   // ------------------------------------------------------------------
 
   // ------------------------------------------------------------------
-  // ------------------------ Start integration -----------------------
+  // -------------------------- Computation ---------------------------
   // ------------------------------------------------------------------
-  double t = 0;
-  double tEnd = 1;
-  double dt = 0.0001;
-  int iter_max = (int) (tEnd-t)/dt;
-  int output = 1;
-  printf("iter max = %d\n",iter_max);
+
   // // Temporal loop
   Kernel kernel = Cubic;
-  int i = 0;
-  while (t < tEnd){
-    printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
-    if (i%output == 0)
-      show(particles, animation, i, false, false);
-    update_cells(grid, particles, n_p);
-    update_neighbors(grid, particles, n_p, i);
-    update_pressureDam(particles, n_p, rho_0, g, H);
-    // time_integration(particles, n_p, kernel, dt, edges);
-    time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
-    if (i%output == 0)
-      show(particles, animation, i, false, false);
-    printf("Time integration completed\n");
 
-    i++;
-    t += dt;
+  update_cells(grid, particles, n_p);
+  update_neighbors(grid, particles, n_p, 0);
+  Vector** gradP = (Vector**) malloc(sizeof(Vector*) * n_p);
+  double meanx = 0;
+  double meany = 0;
+  double max = 0;
+  double min = 0;
+  for(int i = 0; i < n_p ; i++){
+    gradP[i] = grad_P(particles[i], kernel);
+    // int j = 0;
+    // ListNode* current = particles[i]->neighbors->head;
+    // while(current != NULL){
+    //   j++;
+    //   current = current->next;
+    // }
+    // printf("Nombre de voisins = %d\n",j);
+    Vector_print(gradP[i]);
+    meanx += gradP[i]->X[0];
+    meany += gradP[i]->X[1];
+
+
+    if (min > gradP[i]->X[0]){
+      min = gradP[i]->X[0];
+    }
+    if(max < gradP[i]->X[0]){
+      max = gradP[i]->X[0];
+    }
   }
-  show(particles,animation, iter_max, true, false);
+  meanx /= (double) n_p;
+  meany /= (double) n_p;
+
+  printf("Meanx = %f\t\tMeany = %f\n", meanx, meany);
+  printf("max   = %f\t\tmin   = %f\n",max,min );
+
+
+
+  for(int i = 0; i < n_p; i++){
+    Vector_free(gradP[i]);
+  }
+  free(gradP);
+
+  show(particles,animation, (int) 1, true, false);
 
 
 

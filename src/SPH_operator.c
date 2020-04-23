@@ -55,22 +55,6 @@ Vector* grad_P(Particle* pi, Kernel kernel){
     Vector_free(inner);
     Vector_free(dW);
 
-    // Order 1 method
-    // Particle* pj = node->v;
-    // double fj = pj->fields->P;
-    // double mj = pj->param->mass;
-    // double rho_j = pj->fields->rho;
-    // Vector* xj = pj->fields->x;
-    //
-    // Vector* dW = grad_kernel(xi ,xj,h, kernel);
-    // double fj_fi = fj-fi;
-    // double a = (fj_fi/rho_i)*rho_j*mj;
-    // Vector* inner = times(dW,a);
-    // sum_into(grad, inner);
-    //
-    // Vector_free(inner);
-    // Vector_free(dW);
-
     node = node->next;
   }
   return grad;
