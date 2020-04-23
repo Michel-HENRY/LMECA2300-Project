@@ -158,7 +158,7 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     times_into(grad_Pressure, -1);
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
-    Vector* laplacian_u = lapl_u_Brookshaw(pi,kernel);
+    Vector* laplacian_u = lapl_u(pi,kernel);
     // printf("Laplacian %i :\n", i);
     // Vector_print(laplacian_u);
     times_into(laplacian_u, viscosity);
@@ -188,7 +188,7 @@ Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     times_into(grad_Pressure,-1);
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
-    Vector* laplacian_u = lapl_u_Brookshaw(pi,kernel);
+    Vector* laplacian_u = lapl_u(pi,kernel);
     // printf("Laplacian %i :\n", i);
     // Vector_print(laplacian_u);
     times_into(laplacian_u, viscosity);

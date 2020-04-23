@@ -8,32 +8,31 @@ double derivative_Lucy_kernel(double q, double h);
 
 
 double eval_kernel(Vector* v1, Vector* v2, double h, Kernel kernel) {
-  double d = dist(v1,v2);
-  double R;
+  double R = dist(v1,v2);
   double W = 0;
   if(kernel == Cubic) {
-      R = d/h;
       W =  eval_Cubic_kernel(R, h);
   }
 	else if (kernel == Lucy) {
-		R = d/h;
 		W =  eval_Lucy_kernel(R, h);
 	}
   return W;
 }
 
 double eval_Cubic_kernel(double R, double h) {
-  double alpha = 8.0/(M_PI*h*h*h);
+  double alpha = 10/(7*M_PI*h*h);
+  double q = R/(2*h);
   double eps = 1e-8;
-  if(R >= eps && R <= 0.5-eps) return alpha*(1 - 6*pow(R,2) + 6*pow(R,3)/2);
-  else if(R > 0.5-eps && R <= 1-eps) return alpha*(2*pow(1-R, 3));
+  if(q >= eps && q <= 1-eps) return alpha*(1 - 1.5*q*q*(1 - q/2));
+  else if(q > 1-eps && q <= 2-eps) return alpha/4*pow(2-q,3);
   else return 0;
 }
 
 double eval_Lucy_kernel(double R, double h) {
  double alpha = 5.0 / (M_PI*pow(h, 2));
+ double q = R/h;
   double eps = 1e-8;
- if (R >= eps && R <= 1-eps) return alpha*(1+3*R)*(1-pow(R,3));
+ if (q >= eps && q <= 1-eps) return alpha*(1+3*q)*(1-pow(q,3));
  else return 0;
 }
 
@@ -50,42 +49,45 @@ Vector* grad_kernel(Vector* v1, Vector* v2, double h, Kernel kernel) {
 
 
 double derivative_kernel(Vector* v1, Vector* v2, double h, Kernel kernel, int axis){
-  double d = dist(v1,v2);
+  double R = dist(v1,v2);
   double dWdr,drdx = 1;
+  double eta = 1e-5;
   if(kernel == Cubic){
-    dWdr = derivative_Cubic_kernel(d/h, h);
-    drdx = (v2->X[axis] - v1->X[axis])/(d*h);
+    dWdr = derivative_Cubic_kernel(R, h);
+    drdx = (v1->X[axis] - v2->X[axis])/(R+eta);
 		return dWdr*drdx;
 	}
   else if(kernel == Lucy){
-    dWdr = derivative_Lucy_kernel(d/h, h);
-    drdx = (v2->X[axis] - v1->X[axis])/(d*h);
+    dWdr = derivative_Lucy_kernel(R, h);
+    drdx = (v1->X[axis] - v2->X[axis])/(R+eta);
 		return dWdr*drdx;
 	}
 	return 0;
 }
 
 double derivative_Cubic_kernel(double R,double h){
-	 double alpha = 8.0/(M_PI*pow(h, 3));
+	 double alpha = 10.0/(7*M_PI*h*h);
 	 double dW = 0;
+   double q = R/(2*h);
    double eps = 1e-8;
-   if (R >= eps && R <= 0.5+eps) dW = -12*R + 18*pow(R, 2);
-	 else if (R > 0.5+eps && R <= 1-eps) dW = -6*pow(1-R, 2);
-	 return alpha*dW;
+   if (q >= eps && q <= 1+eps) dW = -3*q + 9/4*q*q;
+	 else if (q > 1+eps && q <= 2-eps) dW = -3/4*pow(2-q, 2);
+	 return alpha*dW/(2*h);
 }
 
  double derivative_Lucy_kernel(double R, double h){
-	 double alpha = 5.0/(M_PI*pow(h, 2));
+	 double alpha = 5.0/(M_PI*pow(h, 3));
 	 double dW = 0;
    double eps = 1e-8;
-	 if (R >= eps && R <= 1-eps){
-     dW = 3*(1 - pow(R,2) - 4*pow(R,3));
+   double q = R/h;
+	 if (q >= eps && q <= 1-eps){
+     dW = 3*(1 - pow(q,2) - 4*pow(q,3));
    }
-	 return alpha*dW;
+	 return alpha*dW/h;
  }
 
 void kernel_validation(){
-  Kernel kernel = Lucy;
+  Kernel kernel = Cubic;
   double h = 1;
   int DIM = 2;
 

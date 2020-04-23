@@ -177,6 +177,122 @@ int boundary_validation(){
   return EXIT_SUCCESS;
 }
 
+int SPH_operator_validation(){
+  double lx = 1;                          // Longueur du domaine de particule
+  double ly = 1;                          // Hauteur du domaine de particle
+  int n_p_dim = 25;                       // Nombre moyen de particule par dimension
+
+  // Parameters
+  double rho_0 = 1;                       // Densité initiale
+  double dynamic_viscosity = 1;           // Viscosité dynamique
+  double g = 0.00;                        // Gravité
+  int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
+  int n_p_dim_y = n_p_dim*ly;
+  int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
+  double h = lx/n_p_dim_x;                // step between neighboring particles
+  double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
+  double mass = rho_0*lx*ly/n_p;          // Masse d'une particule, constant
+  double Rp = h/2;                        // Rayon d'une particule
+  double eta = 0.0;                       // XSPH parameter from 0 to 1
+  double treshold = 20;                   // Critère pour la surface libre
+  double tension = 72*1e-3;               // Tension de surface de l'eau
+  double P0 = 0;                          // Pression atmosphérique
+
+  // ------------------------------------------------------------------
+  // ------------------------ SET Particles ---------------------------
+  // ------------------------------------------------------------------
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0);
+  Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
+
+  // Impose linear gradient pressure :
+  for(int i = 0; i < n_p ; i ++){
+    double x,y;
+    x = particles[i]->fields->x->X[0];
+    y = particles[i]->fields->x->X[1];
+    // particles[i]->fields->P = 2*x + y;
+    // particles[i]->fields->u->X[0] = x;
+    // particles[i]->fields->u->X[1] = x*x;
+  }
+
+  // ------------------------------------------------------------------
+  // ------------------------ SET Edges -------------------------------
+  // ------------------------------------------------------------------
+
+  double L = 1;
+  double H = 1;
+  int n_e = 4;
+  double CF = 0.0;
+  double CR = 1.0;
+
+  double domain[4];
+  Edges* edges = get_box(L,H,n_e,CF,CR,domain);
+  // ------------------------------------------------------------------
+  // ------------------------ SET Grid --------------------------------
+  // ------------------------------------------------------------------
+  double extra = 0.0;
+  extra = 0.5;
+  Grid* grid = Grid_new(0-extra, L+extra, 0-extra, H+extra, kh);
+
+  // ------------------------------------------------------------------
+  // ------------------------ SET Animation ---------------------------
+  // ------------------------------------------------------------------
+  double timeout = 0.001;                 // Durée d'une frame
+  Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
+
+  // ------------------------------------------------------------------
+  // ------------------------ Start integration -----------------------
+  // ------------------------------------------------------------------
+
+  // ------------------------------------------------------------------
+  // -------------------------- Computation ---------------------------
+  // ------------------------------------------------------------------
+
+  // // Temporal loop
+  Kernel kernel = Cubic;
+
+  update_cells(grid, particles, n_p);
+  update_neighbors(grid, particles, n_p, 0);
+  double meanx = 0;
+  double meany = 0;
+  double max = 0;
+  double min = 0;
+  for(int i = 0; i < n_p ; i++){
+    // Vector* gradP = grad_P(particles[i], kernel);         //Pas précis
+    // Vector* gradP = CSPM_pressure(particles[i], kernel);  //Ordre 1 sur les noeuds intérieurs
+    // Vector_print(gradP[i]);
+    // Vector_free(gradP);
+
+
+    // Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
+    // Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
+    // printf("----------------\n");
+    // Vector_print(lapl_s);
+    // Vector_print(lapl);
+    // Vector_free(lapl);
+    // Vector_free(lapl_s);
+
+    // double divergence = div_u(particles[i],kernel);
+    // printf("div = %f\n",divergence);
+  }
+
+  show(particles,animation, (int) 1, true, false);
+
+
+
+  // ------------------------------------------------------------------
+  // ------------------------ FREE Memory -----------------------------
+  // ------------------------------------------------------------------
+  Particles_free(particles, n_p);
+  printf("END FREE PARTICLES\n");
+  Edges_free(edges);
+  printf("END FREE EDGES\n");
+  Grid_free(grid);
+  printf("END FREE GRID\n");
+  Animation_free(animation);
+  printf("END FREE ANIMATION\n");
+  return EXIT_SUCCESS;
+}
+
 int dam_break(){
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 2;                          // Hauteur du domaine de particle
@@ -259,133 +375,6 @@ int dam_break(){
     t += dt;
   }
   show(particles,animation, iter_max, true, false);
-
-
-
-  // ------------------------------------------------------------------
-  // ------------------------ FREE Memory -----------------------------
-  // ------------------------------------------------------------------
-  Particles_free(particles, n_p);
-  printf("END FREE PARTICLES\n");
-  Edges_free(edges);
-  printf("END FREE EDGES\n");
-  Grid_free(grid);
-  printf("END FREE GRID\n");
-  Animation_free(animation);
-  printf("END FREE ANIMATION\n");
-  return EXIT_SUCCESS;
-}
-
-int SPH_operator_validation(){
-  double lx = 1;                          // Longueur du domaine de particule
-  double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 75;                       // Nombre moyen de particule par dimension
-
-  // Parameters
-  double rho_0 = 1;                       // Densité initiale
-  double dynamic_viscosity = 0;           // Viscosité dynamique
-  double g = 0.00;                        // Gravité
-  int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
-  int n_p_dim_y = n_p_dim*ly;
-  int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
-  double h = lx/n_p_dim_x;                // step between neighboring particles
-  double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
-  double mass = rho_0*lx*ly/n_p;           // Masse d'une particule, constant
-  double Rp = h/2;                        // Rayon d'une particule
-  double eta = 0.0;                       // XSPH parameter from 0 to 1
-  double treshold = 20;                   // Critère pour la surface libre
-  double tension = 72*1e-3;               // Tension de surface de l'eau
-  double P0 = 0;                          // Pression atmosphérique
-
-  // ------------------------------------------------------------------
-  // ------------------------ SET Particles ---------------------------
-  // ------------------------------------------------------------------
-  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0);
-  Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
-
-  // Impose linear gradient pressure :
-  for(int i = 0; i < n_p ; i ++){
-    particles[i]->fields->P = particles[i]->fields->x->X[1] + 100; // P = y + 100
-  }
-
-  // ------------------------------------------------------------------
-  // ------------------------ SET Edges -------------------------------
-  // ------------------------------------------------------------------
-
-  double L = 1;
-  double H = 1;
-  int n_e = 4;
-  double CF = 0.0;
-  double CR = 1.0;
-
-  double domain[4];
-  Edges* edges = get_box(L,H,n_e,CF,CR,domain);
-  // ------------------------------------------------------------------
-  // ------------------------ SET Grid --------------------------------
-  // ------------------------------------------------------------------
-  double extra = 0.0;
-  extra = 0.5;
-  Grid* grid = Grid_new(0-extra, L+extra, 0-extra, H+extra, kh);
-
-  // ------------------------------------------------------------------
-  // ------------------------ SET Animation ---------------------------
-  // ------------------------------------------------------------------
-  double timeout = 0.001;                 // Durée d'une frame
-  Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
-
-  // ------------------------------------------------------------------
-  // ------------------------ Start integration -----------------------
-  // ------------------------------------------------------------------
-
-  // ------------------------------------------------------------------
-  // -------------------------- Computation ---------------------------
-  // ------------------------------------------------------------------
-
-  // // Temporal loop
-  Kernel kernel = Cubic;
-
-  update_cells(grid, particles, n_p);
-  update_neighbors(grid, particles, n_p, 0);
-  Vector** gradP = (Vector**) malloc(sizeof(Vector*) * n_p);
-  double meanx = 0;
-  double meany = 0;
-  double max = 0;
-  double min = 0;
-  for(int i = 0; i < n_p ; i++){
-    gradP[i] = grad_P(particles[i], kernel);
-    // int j = 0;
-    // ListNode* current = particles[i]->neighbors->head;
-    // while(current != NULL){
-    //   j++;
-    //   current = current->next;
-    // }
-    // printf("Nombre de voisins = %d\n",j);
-    Vector_print(gradP[i]);
-    meanx += gradP[i]->X[0];
-    meany += gradP[i]->X[1];
-
-
-    if (min > gradP[i]->X[0]){
-      min = gradP[i]->X[0];
-    }
-    if(max < gradP[i]->X[0]){
-      max = gradP[i]->X[0];
-    }
-  }
-  meanx /= (double) n_p;
-  meany /= (double) n_p;
-
-  printf("Meanx = %f\t\tMeany = %f\n", meanx, meany);
-  printf("max   = %f\t\tmin   = %f\n",max,min );
-
-
-
-  for(int i = 0; i < n_p; i++){
-    Vector_free(gradP[i]);
-  }
-  free(gradP);
-
-  show(particles,animation, (int) 1, true, false);
 
 
 
