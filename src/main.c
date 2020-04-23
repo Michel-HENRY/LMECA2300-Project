@@ -11,6 +11,8 @@
 int dam_break();
 int one_particle();
 
+Particles** fluidProblem();
+
 int main(){
   // dam_break();
   one_particle();
