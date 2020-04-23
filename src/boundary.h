@@ -21,6 +21,7 @@ void Edges_free(Edges* edges);
 void set_normal(Edges* edges);
 
 bool isInside(Vector* C1, Edges* edges, double Rp);
+bool CenterIsInside(Vector* C1, Vector* e0, Vector* e1);
 double* distEdge(Vector* C1, Edges* edges);
 int indexCPlane(double* dist_edges, int n_e);
 void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, int index);

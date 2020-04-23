@@ -64,6 +64,23 @@ bool isInside(Vector* C1, Edges* edges, double Rp){
   }
   return true;
 }
+bool CenterIsInside(Vector* C1, Vector* e0, Vector* e1){
+  double xa,xb,xc,ya,yb,yc;
+
+  xa = e0->X[0];    ya = e0->X[1];
+  xb = e1->X[0];    yb = e1->X[1];
+  xc = C1->X[0];    yc = C1->X[1];
+
+  double a,b;
+  a = (xa-xb)*(yc-ya);
+  b = (ya-yb)*(xc-xa);
+  // printf("\na = %f\t b = %f \t a < b => %d\n",a,b, a<=b);
+
+  if((xa-xb)*(yc-ya) > (ya-yb)*(xc-xa)){
+    return false;
+  }
+  return true;
+}
 
 double* distEdge(Vector* C1, Edges* edges){
   double* d_e = (double*) malloc(sizeof(double) * edges->n_e);
@@ -107,7 +124,33 @@ void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, int index
   // printf("C1n = %f\n", C1n);
 
   double CR = edges->CR;
-  C1n = -C1n + (1+CR)*(Rp - d); // Pas vrmt d'explication pour le -Rp au lieu de Rp
+  if(CenterIsInside(C1,edges->edge[2*index], edges->edge[2*index+1])){
+    C1n = -C1n + (1+CR)*(Rp-d);
+  }
+  else{
+    C1n = -C1n + (1+CR)*(Rp+d);
+  }
+
+  // printf("C1n = %f\n", C1n);
+  for(int i = 0; i < C1->DIM; i++){
+    C1->X[i] = -C1n*n->X[i] + C1t*t->X[i]; // On change le signe perpeniculaire à la frontière
+  }
+  // Vector_print(C1);
+}
+void update_mass_center_bis(Vector* C1, double Rp, Edges* edges, double d, int index){
+
+  Vector* n = edges->n[index];
+  Vector* t = Vector_new(C1->DIM);
+  t->X[0] = -n->X[1]; t->X[1] = n->X[0];
+
+  double C1n = dot(C1,n); //On fait -dot car la normale était prise sortante
+  double C1t = dot(C1,t);
+
+  // Vector_print(C1);
+  // printf("C1n = %f\n", C1n);
+
+  double CR = edges->CR;
+  C1n = -C1n + (1+CR)*(Rp + d); // Pas vrmt d'explication pour le -Rp au lieu de Rp
   // printf("C1n = %f\n", C1n);
   for(int i = 0; i < C1->DIM; i++){
     C1->X[i] = -C1n*n->X[i] + C1t*t->X[i]; // On change le signe perpeniculaire à la frontière
@@ -147,13 +190,8 @@ void reflective_boundary(Particle** p, int n_p, Edges* edges){
         break;
       }
       double* dist_edges = distEdge(C1, edges);
-      // for(int j = 0; j < edges->n_e; j++){
-      //   printf("d[%d] = %.3f\t", j, dist_edges[j]);
-      // }
-      // printf("\n");
       int index = indexCPlane(dist_edges, edges->n_e);
       // update mass center and correct velocity
-
       update_mass_center(C1,Rp,edges, dist_edges[index], index);
       update_velocity(pi,edges,index);
 
