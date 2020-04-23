@@ -11,14 +11,15 @@
 // Validation function
 int dam_break();
 int one_particle();
+int SPH_operator_validation();
 
 // Useful function to create the usual sructures
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform);
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  // dam_break();
-  one_particle();
+  dam_break();
+  // one_particle();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
   int n_p = n_p_dim_x*n_p_dim_y;
@@ -268,7 +269,109 @@ int dam_break(){
   printf("END FREE EDGES\n");
   Grid_free(grid);
   printf("END FREE GRID\n");
-  // Animation_free(animation);
-  // printf("END FREE ANIMATION\n");
+  Animation_free(animation);
+  printf("END FREE ANIMATION\n");
+  return EXIT_SUCCESS;
+}
+
+int SPH_operator_validation(){
+  double lx = 1;                          // Longueur du domaine de particule
+  double ly = 1;                          // Hauteur du domaine de particle
+  int n_p_dim = 10;                       // Nombre moyen de particule par dimension
+
+  // Parameters
+  double rho_0 = 1e3;                     // Densité initiale
+  double dynamic_viscosity = 0;           // Viscosité dynamique
+  double g = 0.00;                        // Gravité
+  int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
+  int n_p_dim_y = n_p_dim*ly;
+  int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
+  double h = lx/n_p_dim_x;                // step between neighboring particles
+  double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
+  double mass = rho_0 * h*h;              // Masse d'une particule, constant
+  double Rp = h/2;                        // Rayon d'une particule
+  double eta = 0.0;                       // XSPH parameter from 0 to 1
+  double treshold = 20;                   // Critère pour la surface libre
+  double tension = 72*1e-3;               // Tension de surface de l'eau
+  double P0 = 0;                          // Pression atmosphérique
+
+  // ------------------------------------------------------------------
+  // ------------------------ SET Particles ---------------------------
+  // ------------------------------------------------------------------
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0);
+  Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
+
+  // ------------------------------------------------------------------
+  // ------------------------ SET Edges -------------------------------
+  // ------------------------------------------------------------------
+
+  double L = 1;
+  double H = 1;
+  int n_e = 4;
+  double CF = 0.0;
+  double CR = 1.0;
+
+  double domain[4];
+  Edges* edges = get_box(L,H,n_e,CF,CR,domain);
+  // ------------------------------------------------------------------
+  // ------------------------ SET Grid --------------------------------
+  // ------------------------------------------------------------------
+  double extra = 0.0;
+  extra = 0.5;
+  Grid* grid = Grid_new(0-extra, L+extra, 0-extra, H+extra, kh);
+
+  // ------------------------------------------------------------------
+  // ------------------------ SET Animation ---------------------------
+  // ------------------------------------------------------------------
+  double timeout = 0.001;                 // Durée d'une frame
+  Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
+
+  // ------------------------------------------------------------------
+  // ------------------------ Start integration -----------------------
+  // ------------------------------------------------------------------
+
+  // ------------------------------------------------------------------
+  // ------------------------ Start integration -----------------------
+  // ------------------------------------------------------------------
+  double t = 0;
+  double tEnd = 1;
+  double dt = 0.0001;
+  int iter_max = (int) (tEnd-t)/dt;
+  int output = 1;
+  printf("iter max = %d\n",iter_max);
+  // // Temporal loop
+  Kernel kernel = Cubic;
+  int i = 0;
+  while (t < tEnd){
+    printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
+    if (i%output == 0)
+      show(particles, animation, i, false, false);
+    update_cells(grid, particles, n_p);
+    update_neighbors(grid, particles, n_p, i);
+    update_pressureDam(particles, n_p, rho_0, g, H);
+    // time_integration(particles, n_p, kernel, dt, edges);
+    time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
+    if (i%output == 0)
+      show(particles, animation, i, false, false);
+    printf("Time integration completed\n");
+
+    i++;
+    t += dt;
+  }
+  show(particles,animation, iter_max, true, false);
+
+
+
+  // ------------------------------------------------------------------
+  // ------------------------ FREE Memory -----------------------------
+  // ------------------------------------------------------------------
+  Particles_free(particles, n_p);
+  printf("END FREE PARTICLES\n");
+  Edges_free(edges);
+  printf("END FREE EDGES\n");
+  Grid_free(grid);
+  printf("END FREE GRID\n");
+  Animation_free(animation);
+  printf("END FREE ANIMATION\n");
   return EXIT_SUCCESS;
 }
