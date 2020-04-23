@@ -189,9 +189,9 @@ Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
     Vector* laplacian_u = lapl_u(pi,kernel);
+    times_into(laplacian_u, viscosity);
     // printf("Laplacian %i :\n", i);
     // Vector_print(laplacian_u);
-    times_into(laplacian_u, viscosity);
     Vector* forces = pi->fields->f;
     sum_into(forces, force_surface[i]);
 
@@ -237,32 +237,34 @@ void CSPM_density(Particle** p, int n_p, Kernel kernel){
 Vector* CSPM_pressure(Particle* pi, Kernel kernel){
   double rhoi = pi->fields->rho;
   Vector* grad_Pressure = grad_P(pi,kernel);
-  double num_x = 1e-8;
-  double num_y = 1e-8;
-  double den_x = 1e-8;
-  double den_y = 1e-8;
-  ListNode* current = pi->neighbors->head;
-  while(current != NULL){
-    Particle* pj = current->v;
-    double Vj = pj->param->mass/pj->fields->rho;
-    Vector* dW = grad_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);
-    double xjxi = pj->fields->x->X[0] - pi->fields->x->X[0];
-    double yjyi = pj->fields->x->X[1] - pi->fields->x->X[1];
-    den_x += Vj * dW->X[0] * xjxi;
-    den_y += Vj * dW->X[1] * yjyi;
 
-    Vector_free(dW);
-    current = current->next;
-  }
-  num_x = grad_Pressure->X[0]/rhoi;
-  num_y = grad_Pressure->X[1]/rhoi;
+  // static int counter = 0;
+  // printf("counter = %d\n", counter);
+  // if (counter%3000){
+    double num_x = 1e-8;    double den_x = 1e-8;
+    double num_y = 1e-8;    double den_y = 1e-8;
+    ListNode* current = pi->neighbors->head;
+    while(current != NULL){
+      Particle* pj = current->v;
+      double Vj = pj->param->mass/pj->fields->rho;
+      Vector* dW = grad_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);
+      double xjxi = pj->fields->x->X[0] - pi->fields->x->X[0];
+      double yjyi = pj->fields->x->X[1] - pi->fields->x->X[1];
+      den_x += Vj * dW->X[0] * xjxi;
+      den_y += Vj * dW->X[1] * yjyi;
 
-  Vector* dP = Vector_new(grad_Pressure->DIM);
-  dP->X[0] = num_x/den_x;
-  dP->X[1] = num_y/den_y;
+      Vector_free(dW);
+      current = current->next;
+    }
+    num_x = grad_Pressure->X[0]/rhoi;
+    num_y = grad_Pressure->X[1]/rhoi;
 
-  Vector_free(grad_Pressure);
-  return dP;
+    grad_Pressure->X[0] = num_x/den_x;
+    grad_Pressure->X[1] = num_y/den_y;
+  // }
+  // 
+  // counter++;
+  return grad_Pressure;
 }
 
 
@@ -299,9 +301,9 @@ void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* ed
   Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
   double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
   time_integration_mass(p,n_p,rhs_mass,dt);
+
   time_integration_momentum(p,n_p,rhs_momentum,dt);
 
-  // Check boundary;
   time_integration_position(p,n_p,dt);
   reflective_boundary(p, n_p, edges);
 
@@ -324,7 +326,7 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);
   time_integration_momentum(p,n_p,rhs_momentum,dt);
 
-  // XSPH_correction(p, n_p, kernel, eta);
+  XSPH_correction(p, n_p, kernel, eta);
 
   time_integration_position(p,n_p,dt);
   reflective_boundary(p, n_p, edges);

@@ -18,8 +18,8 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  // dam_break();
-  boundary_validation();
+  dam_break();
+  // boundary_validation();
   // SPH_operator_validation();
   // kernel_validation();
 }
@@ -184,7 +184,7 @@ int SPH_operator_validation(){
 
   // Parameters
   double rho_0 = 1;                       // Densité initiale
-  double dynamic_viscosity = 1;           // Viscosité dynamique
+  double dynamic_viscosity = 10;           // Viscosité dynamique
   double g = 0.00;                        // Gravité
   int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*ly;
@@ -211,7 +211,7 @@ int SPH_operator_validation(){
     y = particles[i]->fields->x->X[1];
     // particles[i]->fields->P = 2*x + y;
     // particles[i]->fields->u->X[0] = x;
-    // particles[i]->fields->u->X[1] = x*x;
+    particles[i]->fields->u->X[1] = x*x;
   }
 
   // ------------------------------------------------------------------
@@ -263,13 +263,13 @@ int SPH_operator_validation(){
     // Vector_free(gradP);
 
 
-    // Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
-    // Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
-    // printf("----------------\n");
-    // Vector_print(lapl_s);
-    // Vector_print(lapl);
-    // Vector_free(lapl);
-    // Vector_free(lapl_s);
+    Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
+    Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
+    printf("----------------\n");
+    Vector_print(lapl_s);
+    Vector_print(lapl);
+    Vector_free(lapl);
+    Vector_free(lapl_s);
 
     // double divergence = div_u(particles[i],kernel);
     // printf("div = %f\n",divergence);
@@ -306,7 +306,7 @@ int dam_break(){
   int n_p_dim_y = n_p_dim*ly;
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
   double h = lx/n_p_dim_x;                // step between neighboring particles
-  double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
+  double kh = 2*sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
   double mass = rho_0 * h*h;              // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1
@@ -317,7 +317,6 @@ int dam_break(){
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
   // ------------------------------------------------------------------
-  // Particle** particles = (Particle**) malloc(n_p*sizeof(Particle*));
   Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold,P0);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
 
@@ -351,7 +350,7 @@ int dam_break(){
   // ------------------------------------------------------------------
   double t = 0;
   double tEnd = 1;
-  double dt = 0.0001;
+  double dt = 0.01;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
