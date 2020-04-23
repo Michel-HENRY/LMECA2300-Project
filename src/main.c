@@ -295,16 +295,16 @@ int SPH_operator_validation(){
 }
 
 int dam_break(){
-  double lx = 1;                          // Longueur du domaine de particule
-  double ly = 2;                          // Hauteur du domaine de particle
-  int n_p_dim = 30;
+  double lx = 0.114;                          // Longueur du domaine de particule
+  double ly = 0.228;                          // Hauteur du domaine de particle
+  int n_p_dim = 25;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
   double dynamic_viscosity = 1e-3;        // Viscosité dynamique
   double g = 9.81;                        // Gravité
-  int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
-  int n_p_dim_y = n_p_dim*ly;
+  int n_p_dim_x = n_p_dim;             // Nombre de particule par dimension
+  int n_p_dim_y = n_p_dim*(ly/lx);
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
   double h = lx/n_p_dim_x;                // step between neighboring particles
   double kh = 2*sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
@@ -312,7 +312,7 @@ int dam_break(){
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
-  double tension = 72*1e-3;               // Tension de surface de l'eau
+  double tension = 0; //72*1e-3;               // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------
@@ -325,8 +325,8 @@ int dam_break(){
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
 
-  double L = 4;
-  double H = 4;
+  double L = 0.440;
+  double H = 0.440;
   int n_e = 4;
   double CF = 0.0;
   double CR = 1.0;

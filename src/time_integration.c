@@ -252,9 +252,6 @@ static Vector* CSPM_pressure(Particle* pi, Kernel kernel){
   double rhoi = pi->fields->rho;
   Vector* grad_Pressure = grad_P(pi,kernel);
 
-  // static int counter = 0;
-  // printf("counter = %d\n", counter);
-  // if (counter%3000){
     double num_x = 1e-8;    double den_x = 1e-8;
     double num_y = 1e-8;    double den_y = 1e-8;
     ListNode* current = pi->neighbors->head;
@@ -275,9 +272,7 @@ static Vector* CSPM_pressure(Particle* pi, Kernel kernel){
 
     grad_Pressure->X[0] = num_x/den_x;
     grad_Pressure->X[1] = num_y/den_y;
-  // }
-  //
-  // counter++;
+
   return grad_Pressure;
 }
 
