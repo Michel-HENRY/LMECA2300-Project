@@ -9,9 +9,10 @@
 #include <stdlib.h>
 
 // Validation function
-int dam_break();
-int boundary_validation();
-int SPH_operator_validation();
+static int dam_break();
+static int boundary_validation();
+static int SPH_operator_validation();
+static int free_surface_validation();
 
 // Useful function to create the usual sructures
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform);
@@ -21,7 +22,7 @@ int main(){
   dam_break();
   // boundary_validation();
   // SPH_operator_validation();
-  // kernel_validation();
+  // free_surface_validation();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
   int n_p = n_p_dim_x*n_p_dim_y;
@@ -300,14 +301,14 @@ int dam_break(){
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
-  double dynamic_viscosity = 1e-6;        // Viscosité dynamique
+  double dynamic_viscosity = 1e-3;        // Viscosité dynamique
   double g = 9.81;                        // Gravité
   int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*ly;
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
   double h = lx/n_p_dim_x;                // step between neighboring particles
   double kh = 2*sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
-  double mass = rho_0 * h*h;              // Masse d'une particule, constant
+  double mass = rho_0*h*h;              // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
@@ -342,15 +343,15 @@ int dam_break(){
   // ------------------------------------------------------------------
   // ------------------------ SET Animation ---------------------------
   // ------------------------------------------------------------------
-  double timeout = 0.001;                 // Durée d'une frame
+  double timeout = 0.0001;                 // Durée d'une frame
   Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
 
   // ------------------------------------------------------------------
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 1;
-  double dt = 0.01;
+  double tEnd = 10;
+  double dt = 0.0001;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);

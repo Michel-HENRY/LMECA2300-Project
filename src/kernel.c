@@ -19,7 +19,7 @@ double eval_kernel(Vector* v1, Vector* v2, double h, Kernel kernel) {
   return W;
 }
 
-double eval_Cubic_kernel(double R, double h) {
+static double eval_Cubic_kernel(double R, double h) {
   double alpha = 10/(7*M_PI*h*h);
   double q = R/(2*h);
   double eps = 1e-8;
@@ -28,7 +28,7 @@ double eval_Cubic_kernel(double R, double h) {
   else return 0;
 }
 
-double eval_Lucy_kernel(double R, double h) {
+static double eval_Lucy_kernel(double R, double h) {
  double alpha = 5.0 / (M_PI*pow(h, 2));
  double q = R/h;
   double eps = 1e-8;
@@ -48,7 +48,7 @@ Vector* grad_kernel(Vector* v1, Vector* v2, double h, Kernel kernel) {
 }
 
 
-double derivative_kernel(Vector* v1, Vector* v2, double h, Kernel kernel, int axis){
+static double derivative_kernel(Vector* v1, Vector* v2, double h, Kernel kernel, int axis){
   double R = dist(v1,v2);
   double dWdr,drdx = 1;
   double eta = 1e-5;
@@ -65,7 +65,7 @@ double derivative_kernel(Vector* v1, Vector* v2, double h, Kernel kernel, int ax
 	return 0;
 }
 
-double derivative_Cubic_kernel(double R,double h){
+static double derivative_Cubic_kernel(double R,double h){
 	 double alpha = 10.0/(7*M_PI*h*h);
 	 double dW = 0;
    double q = R/(2*h);
@@ -75,7 +75,7 @@ double derivative_Cubic_kernel(double R,double h){
 	 return alpha*dW/(2*h);
 }
 
- double derivative_Lucy_kernel(double R, double h){
+static double derivative_Lucy_kernel(double R, double h){
 	 double alpha = 5.0/(M_PI*pow(h, 3));
 	 double dW = 0;
    double eps = 1e-8;

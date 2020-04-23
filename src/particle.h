@@ -66,14 +66,13 @@ void Particle_validation();
 // -------------------------------------------------------------------
 Grid* Grid_new(double left, double right, double bottom, double top, double h);
 void Grid_free(Grid* grid);
-void Cell_free(Cell* cell);
-void reset_grid(Grid* grid);
-Cell* localize_particle(Grid *grid, Particle *p);
+static void Cell_free(Cell* cell);
+static void reset_grid(Grid* grid);
+static Cell* localize_particle(Grid *grid, Particle *p);
 void update_cells(Grid* grid, Particle** particles, int n_p);
-void update_cells(Grid* grid, Particle** particles, int n_p);
-void add_neighbors_from_cell(Particle* p, Cell* cell , double h);
-void add_neighbors_from_cells(Grid* grid, Particle* p);
-void update_from_potential_neighbors(Particle** particles, int n_p, double h);
+static void add_neighbors_from_cell(Particle* p, Cell* cell , double h);
+static void add_neighbors_from_cells(Grid* grid, Particle* p);
+static void update_from_potential_neighbors(Particle** particles, int n_p, double h);
 void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter);
 
 // -------------------------------------------------------------------
@@ -90,6 +89,6 @@ void Fields_free(Fields* fields);
 Particle* Particle_new(Parameters* param, Fields* fields);
 void Particle_free(Particle* particle);
 void Particles_free(Particle** particles, int n_p);
-void reset_particles(Particle** particles, int N, int iter);
+static void reset_particles(Particle** particles, int N, int iter);
 
 #endif

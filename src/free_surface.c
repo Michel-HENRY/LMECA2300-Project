@@ -31,14 +31,14 @@ Vector** get_force_surface(Particle** p, int n_p, Kernel kernel){
 }
 
 
-double get_curvature(Particle* p, double norm_n, Kernel kernel){
+static double get_curvature(Particle* p, double norm_n, Kernel kernel){
   double lapl = get_lapl_Cs(p, kernel);
   return(-lapl/norm_n);
 }
 
 
 
-double get_lapl_Cs(Particle*pi, Kernel kernel){
+static double get_lapl_Cs(Particle*pi, Kernel kernel){
   double lapl = 0;
 
   double h = pi->param->h;
@@ -66,7 +66,7 @@ double get_lapl_Cs(Particle*pi, Kernel kernel){
   }
   return 2*lapl;
 }
-Vector* get_n(Particle*pi, Kernel kernel){
+static Vector* get_n(Particle*pi, Kernel kernel){
   Vector* grad = Vector_new(pi->fields->u->DIM);
 
   double fi = pi->fields->Cs;
@@ -96,7 +96,7 @@ Vector* get_n(Particle*pi, Kernel kernel){
   times_into(grad,rho_i);
   return grad;
 }
-double get_smooth_Cs(Particle* pi, Kernel kernel){
+static double get_smooth_Cs(Particle* pi, Kernel kernel){
   double Cs = 0;
   ListNode* current = pi->neighbors->head;
   while(current != NULL){

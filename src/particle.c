@@ -52,12 +52,12 @@ void Grid_free(Grid* grid) {
 	free(grid->cells);
 	free(grid);
 }
-void Cell_free(Cell* cell) {
+static void Cell_free(Cell* cell) {
 	List_free(cell->neighboring_cells, NULL);
 	List_free(cell->particles, NULL);
 	free(cell);
 }
-void reset_grid(Grid* grid){
+static void reset_grid(Grid* grid){
 	for(int i = 0; i < grid->nCellx; i++) {
 		for(int j = 0; j < grid->nCelly; j++) {
 			Cell* cell = grid->cells[i][j];
@@ -68,7 +68,7 @@ void reset_grid(Grid* grid){
 	}
 }
 // ------------------------- localize particle -------------------------
-Cell* localize_particle(Grid *grid, Particle *p){
+static Cell* localize_particle(Grid *grid, Particle *p){
 	int i = floor((p->fields->x->X[0] - grid->left) / grid->h);
 	int j = floor((p->fields->x->X[1] - grid->bottom) / grid->h);
 	if(i < 0 || i >= grid->nCellx || j < 0 || j >= grid->nCelly) {
@@ -88,7 +88,7 @@ void update_cells(Grid* grid, Particle** particles, int n_p){
 	}
 }
 // ---------------------- update neighbourhood  ----------------------
-void add_neighbors_from_cell(Particle* p, Cell* cell , double h){
+static void add_neighbors_from_cell(Particle* p, Cell* cell , double h){
 	// Iterate over particles in cell
 	ListNode *node = cell->particles->head;
 	while (node != NULL) {
@@ -100,7 +100,7 @@ void add_neighbors_from_cell(Particle* p, Cell* cell , double h){
 		node = node->next;
 	}
 }
-void add_neighbors_from_cells(Grid* grid, Particle* p){
+static void add_neighbors_from_cells(Grid* grid, Particle* p){
 	add_neighbors_from_cell(p, p->cell, grid->h);
 	ListNode *node = p->cell->neighboring_cells->head;
 	while (node != NULL) {
@@ -110,7 +110,7 @@ void add_neighbors_from_cells(Grid* grid, Particle* p){
 	}
 }
 // Among potential neighbors, filter the valid ones
-void update_from_potential_neighbors(Particle** particles, int n_p, double h){
+static void update_from_potential_neighbors(Particle** particles, int n_p, double h){
 	for (int i = 0; i < n_p; i++) {
 		Particle* p = particles[i];
 		ListNode *node = p->potential_neighbors->head;
@@ -207,7 +207,7 @@ void Particles_free(Particle** particles, int n_p){
   free(particles);
 }
 // Empty neighbors of each particle
-void reset_particles(Particle** particles, int N, int iter){
+static void reset_particles(Particle** particles, int N, int iter){
 	for (int i = 0; i < N; i++) {
 		Particle* p = particles[i];
 		List_free(p->neighbors, NULL);

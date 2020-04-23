@@ -42,7 +42,7 @@ Vector** set_normal(Edges* edges){
   return n;
 }
 
-bool isInside(Vector* C1, Edges* edges, double Rp){
+static bool isInside(Vector* C1, Edges* edges, double Rp){
   for(int i = 0; i < edges->n_e; i++){
     Vector* e0 = edges->edge[2*i];
     Vector* e1 = edges->edge[2*i+1];
@@ -65,7 +65,7 @@ bool isInside(Vector* C1, Edges* edges, double Rp){
   }
   return true;
 }
-bool CenterIsInside(Vector* C1, Vector* e0, Vector* e1){
+static bool CenterIsInside(Vector* C1, Vector* e0, Vector* e1){
   double xa,xb,xc,ya,yb,yc;
 
   xa = e0->X[0];    ya = e0->X[1];
@@ -83,7 +83,7 @@ bool CenterIsInside(Vector* C1, Vector* e0, Vector* e1){
   return true;
 }
 
-double* distEdge(Vector* C1, Edges* edges){
+static double* distEdge(Vector* C1, Edges* edges){
   double* d_e = (double*) malloc(sizeof(double) * edges->n_e);
   for(int i = 0; i < edges->n_e; ++i){
     Vector* e0 = edges->edge[2*i];
@@ -102,7 +102,7 @@ double* distEdge(Vector* C1, Edges* edges){
   return d_e;
 }
 
-int indexCPlane(double* dist_edges, int n_e){
+static int indexCPlane(double* dist_edges, int n_e){
   int min = 0;
   for(int i = 1; i < n_e; i++){
     if(dist_edges[i] < dist_edges[min]){
@@ -112,7 +112,7 @@ int indexCPlane(double* dist_edges, int n_e){
   return min;
 }
 
-void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, int index){
+static void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, int index){
 
   Vector* n = edges->n[index];
   Vector* t = Vector_new(C1->DIM);
@@ -135,7 +135,7 @@ void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, int index
   Vector_free(t);
 }
 
-void update_velocity(Particle* p, Edges* edges, int index){
+static void update_velocity(Particle* p, Edges* edges, int index){
 
   Vector* n = edges->n[index];
   Vector* t = Vector_new(p->fields->u->DIM);
@@ -175,7 +175,7 @@ void reflective_boundary(Particle** p, int n_p, Edges* edges){
 
       free(dist_edges);
       counter++;
-      if(counter > 100){break;}
+      if(counter > 101){break;}
     }
   }
 }
