@@ -18,7 +18,7 @@ struct Edges {
 
 Edges* Edges_new(int n_e, Vector** edge, double CR, double CF);
 void Edges_free(Edges* edges);
-void set_normal(Edges* edges);
+Vector** set_normal(Edges* edges);
 
 bool isInside(Vector* C1, Edges* edges, double Rp);
 bool CenterIsInside(Vector* C1, Vector* e0, Vector* e1);

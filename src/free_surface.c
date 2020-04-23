@@ -48,7 +48,7 @@ double get_lapl_Cs(Particle*pi, Kernel kernel){
   ListNode* node = pi->neighbors->head;
   while(node != NULL){
     Particle* pj = node->v;
-    double Vj = pj->param->mass/pj->param->rho;
+    double Vj = pj->param->mass/pj->fields->rho;
     double fj = pj->fields->Cs;
     Vector* xj = pj->fields->x;
 
@@ -70,7 +70,7 @@ Vector* get_n(Particle*pi, Kernel kernel){
   Vector* grad = Vector_new(pi->fields->u->DIM);
 
   double fi = pi->fields->Cs;
-  double rho_i = pi->param->rho;
+  double rho_i = pi->fields->rho;
   double h = pi->param->h;
   Vector* xi = pi->fields->x;
 
@@ -81,7 +81,7 @@ Vector* get_n(Particle*pi, Kernel kernel){
     Particle* pj = node->v;
     double fj = pj->fields->Cs;
     double mj = pj->param->mass;
-    double rho_j = pj->param->rho;
+    double rho_j = pj->fields->rho;
     Vector* xj = pj->fields->x;
 
     Vector* dW = grad_kernel(xi ,xj,h, kernel);
@@ -101,7 +101,7 @@ double get_smooth_Cs(Particle* pi, Kernel kernel){
   ListNode* current = pi->neighbors->head;
   while(current != NULL){
     Particle* pj = current->v;
-    double Vj = pj->param->mass/pj->param->rho;
+    double Vj = pj->param->mass/pj->fields->rho;
     // double Csj = pj->fields->Cs;     //TODO : Compare which one is better
     double Csj = 1;
     double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);

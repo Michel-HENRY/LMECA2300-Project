@@ -8,65 +8,108 @@
 #include <time.h> // To generate random number
 #include <stdlib.h>
 
+// Validation function
 int dam_break();
 int one_particle();
 
-Particles** fluidProblem();
+// Useful function to create the usual sructures
+Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform);
+Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
   // dam_break();
   one_particle();
 }
+Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
+  int n_p = n_p_dim_x*n_p_dim_y;
+  Particle** particles = (Particle**) malloc(n_p*sizeof(Particle*));
+  for(int i = 0; i < n_p_dim_x; i++){
+      for(int j = 0; j < n_p_dim_y; j++){
+        int index = i*n_p_dim_y + j;
+
+        Vector* x = Vector_new(2);
+        Vector* u = Vector_new(2);
+        Vector* f = Vector_new(2);
+
+        f->X[1] = -g;
+
+        double Rp = param->Rp;
+        if (isUniform){
+          x->X[0] = Rp*(2*i + 1);      x->X[1] = Rp*(2*j + 1);
+        }
+        else{
+          double l = Rp*n_p_dim_x;
+          x->X[0] = (float)rand()/(float)(RAND_MAX/l);
+          x->X[1] = (float)rand()/(float)(RAND_MAX/l);
+          u->X[0] = 10*(float)rand()/(float)(RAND_MAX/l);
+          u->X[1 ]= 10*(float)rand()/(float)(RAND_MAX/l);
+          //
+          //     u->X[0] = ux;
+          //     u->X[1] = uy;
+        }
+        Fields* fields = Fields_new(x,u,f,P,rho);
+        particles[index] = Particle_new(param, fields);
+      }
+    }
+    return particles;
+}
+Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]){
+  // Create the vertices
+  Vector** vertices = (Vector**) malloc(n_e*sizeof(vertices));
+  for(int i = 0; i < n_e; i++){
+    vertices[i] = Vector_new(2);
+  }
+  vertices[0]->X[0] = 0;                vertices[2]->X[0] = L;
+  vertices[0]->X[1] = 0;                vertices[2]->X[1] = H;
+  vertices[1]->X[0] = L;                vertices[3]->X[0] = 0;
+  vertices[1]->X[1] = 0;                vertices[3]->X[1] = H;
+
+  // Create the edges structure
+  Vector** edge = (Vector**) malloc(n_e*2*sizeof(vertices));
+  for(int i = 0;i < n_e; i++){
+    edge[2*i] = copy(vertices[i]);
+    edge[2*i+1] = copy(vertices[(i+1)%n_e]);
+  }
+  for(int i = 0; i < n_e ; i++){
+    Vector_free(vertices[i]);
+  }
+  free(vertices);
+
+  Edges* edges = Edges_new(n_e, edge, CR,CF);
+  domain[0] = 0;
+  domain[1] = L;
+  domain[2] = 0;
+  domain[3] = H;
+  return edges;
+}
+
 int one_particle(){
-  double lx = 1;                         // Longueur du domaine de particule
+  double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 10;
+  int n_p_dim = 10;                       // Nombre moyen de particule par dimension
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
-  double dynamic_viscosity = 0;        // Viscosité dynamique
+  double dynamic_viscosity = 0;           // Viscosité dynamique
   double g = 0.00;                        // Gravité
   int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*ly;
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
-  double h = lx/25;                // step between neighboring particles
+  double h = lx/n_p_dim_x;                // step between neighboring particles
   double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
   double mass = rho_0 * h*h;              // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
   double tension = 72*1e-3;               // Tension de surface de l'eau
-  double P0 = 1e5;                        // Pression atmosphérique
+  double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
   // ------------------------------------------------------------------
-  Particle** particles = (Particle**) malloc(n_p*sizeof(Particle*));
-  for(int i = 0; i < n_p_dim_x; i++){
-    for(int j = 0; j < n_p_dim_y; j++){
-      int index = i*n_p_dim_y + j;
-      Parameters* param = Parameters_new(rho_0, mass, dynamic_viscosity, kh, Rp, tension, treshold,P0);
-      Vector* x = Vector_new(2);
-      Vector* u = Vector_new(2);
-      Vector* f = Vector_new(2);
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0);
+  Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,false);
 
-      float posx = (float)rand()/(float)(RAND_MAX/lx);
-      float posy = (float)rand()/(float)(RAND_MAX/ly);
-
-      double pos[2] = {posx,posy};
-      double P = 0;
-
-      float ux = 10*(float)rand()/(float)(RAND_MAX/lx);
-      float uy = 10*(float)rand()/(float)(RAND_MAX/ly);
-
-      u->X[0] = ux;
-      u->X[1] = uy;
-
-      Vector_initialise(x,pos);
-      Fields* fields = Fields_new(x,u,f,P);
-      particles[index] = Particle_new(param, fields);
-    }
-  }
   // ------------------------------------------------------------------
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
@@ -77,23 +120,8 @@ int one_particle(){
   double CF = 0.0;
   double CR = 1.0;
 
-  Vector** vertices = (Vector**) malloc(n_e*sizeof(vertices));
-  for(int i = 0; i < n_e; i++){
-    vertices[i] = Vector_new(2);
-  }
-  vertices[0]->X[0] = 0;                vertices[2]->X[0] = L;
-  vertices[0]->X[1] = 0;                vertices[2]->X[1] = H;
-  vertices[1]->X[0] = L;                vertices[3]->X[0] = 0;
-  vertices[1]->X[1] = 0;                vertices[3]->X[1] = H;
-
-
-  Vector** edge = (Vector**) malloc(n_e*2*sizeof(vertices));
-  for(int i = 0;i < n_e; i++){
-    edge[2*i] = vertices[i];
-    edge[2*i+1] = vertices[(i+1)%n_e];
-  }
-  Edges* edges = Edges_new(n_e, edge, CR,CF);
-  double domain[4] = {0,L,0,H};
+  double domain[4];
+  Edges* edges = get_box(L,H,n_e,CF,CR,domain);
   // ------------------------------------------------------------------
   // ------------------------ SET Grid --------------------------------
   // ------------------------------------------------------------------
@@ -120,18 +148,11 @@ int one_particle(){
   Kernel kernel = Cubic;
   int i = 0;
   while (t < tEnd){
-    printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
-    if (i%output == 0)
-      show(particles, animation, i, false, false);
-    // update_cells(grid, particles, n_p);
-    // update_neighbors(grid, particles, n_p, i);
-    // update_pressureDam(particles, n_p, rho_0, g, H);
-    // time_integration(particles, n_p, kernel, dt, edges);
+    printf("-----------\t t/tEnd : %.3f/%f\t-----------\n", t,tEnd);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     if (i%output == 0)
       show(particles, animation, i, false, false);
     printf("Time integration completed\n");
-
     i++;
     t += dt;
   }
@@ -148,13 +169,13 @@ int one_particle(){
   printf("END FREE EDGES\n");
   Grid_free(grid);
   printf("END FREE GRID\n");
-  // Animation_free(animation);
-  // printf("END FREE ANIMATION\n");
+  Animation_free(animation);
+  printf("END FREE ANIMATION\n");
   return EXIT_SUCCESS;
 }
 
 int dam_break(){
-  double lx = 1;                         // Longueur du domaine de particule
+  double lx = 1;                          // Longueur du domaine de particule
   double ly = 2;                          // Hauteur du domaine de particle
   int n_p_dim = 30;
 
@@ -172,33 +193,15 @@ int dam_break(){
   double eta = 0.0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
   double tension = 72*1e-3;               // Tension de surface de l'eau
-  double P0 = 1e5;                        // Pression atmosphérique
+  double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
   // ------------------------------------------------------------------
-  Particle** particles = (Particle**) malloc(n_p*sizeof(Particle*));
-  for(int i = 0; i < n_p_dim_x; i++){
-    for(int j = 0; j < n_p_dim_y; j++){
-      int index = i*n_p_dim_y + j;
-      Parameters* param = Parameters_new(rho_0, mass, dynamic_viscosity, kh, Rp, tension, treshold,P0);
-      Vector* x = Vector_new(2);
-      Vector* u = Vector_new(2);
-      Vector* f = Vector_new(2);
+  // Particle** particles = (Particle**) malloc(n_p*sizeof(Particle*));
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold,P0);
+  Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
 
-      f->X[1] = -g;
-
-      double pos[2] = {Rp + i*h ,Rp + j*h};
-      double P = 0;
-      // if(i == 0){
-        // u->X[0] = -2*(1 - pos[1]*pos[1]);
-      // }
-
-      Vector_initialise(x,pos);
-      Fields* fields = Fields_new(x,u,f,P);
-      particles[index] = Particle_new(param, fields);
-    }
-  }
   // ------------------------------------------------------------------
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
@@ -209,23 +212,8 @@ int dam_break(){
   double CF = 0.0;
   double CR = 1.0;
 
-  Vector** vertices = (Vector**) malloc(n_e*sizeof(vertices));
-  for(int i = 0; i < n_e; i++){
-    vertices[i] = Vector_new(2);
-  }
-  vertices[0]->X[0] = 0;                vertices[2]->X[0] = L;
-  vertices[0]->X[1] = 0;                vertices[2]->X[1] = H;
-  vertices[1]->X[0] = L;                vertices[3]->X[0] = 0;
-  vertices[1]->X[1] = 0;                vertices[3]->X[1] = H;
-
-
-  Vector** edge = (Vector**) malloc(n_e*2*sizeof(vertices));
-  for(int i = 0;i < n_e; i++){
-    edge[2*i] = vertices[i];
-    edge[2*i+1] = vertices[(i+1)%n_e];
-  }
-  Edges* edges = Edges_new(n_e, edge, CR,CF);
-  double domain[4] = {0,L,0,H};
+  double domain[4];
+  Edges* edges = get_box(L,H,n_e,CF,CR,domain);
   // ------------------------------------------------------------------
   // ------------------------ SET Grid --------------------------------
   // ------------------------------------------------------------------

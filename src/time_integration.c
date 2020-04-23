@@ -16,10 +16,10 @@ static void print_vMax(Particle** p, int n_p){
   printf("Max Velocity = %f\n", max_y);
 }
 static void print_rhoMax(Particle** p, int n_p){
-  double max_y = p[0]->param->rho;
+  double max_y = p[0]->fields->rho;
 
   for(int i = 1; i < n_p; i++){
-    double v = p[i]->param->rho;
+    double v = p[i]->fields->rho;
     if(max_y < v){
 			max_y = v;
 		}
@@ -27,10 +27,10 @@ static void print_rhoMax(Particle** p, int n_p){
   printf("Max Density = %f\n", max_y);
 }
 static void print_rhoMin(Particle** p, int n_p){
-  double min_y = p[0]->param->rho;
+  double min_y = p[0]->fields->rho;
 
   for(int i = 1; i < n_p; i++){
-    double v = p[i]->param->rho;
+    double v = p[i]->fields->rho;
     if(min_y > v){
 			min_y = v;
 		}
@@ -69,7 +69,7 @@ void update_pressure(Particle** p, int n_p, double rho_0, double g, double H){
   double B = rho_0*c*c/gamma;
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
-    double rho = pi->param->rho;
+    double rho = pi->fields->rho;
     double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
 
     double y = pi->fields->x->X[1];
@@ -84,7 +84,7 @@ void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H)
   double gamma = 7;
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
-    double rho = pi->param->rho;
+    double rho = pi->fields->rho;
     double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
 
     double y = pi->fields->x->X[1];
@@ -99,7 +99,7 @@ void update_pressureMod(Particle** p, int n_p, double rho_0){
     double B = rho_0*c*c/gamma;
     for(int i = 0; i < n_p ; i++){
       Particle* pi = p[i];
-      double rho = pi->param->rho;
+      double rho = pi->fields->rho;
       double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
 
       pi->fields->P = Pdyn + pi->param->P0;
@@ -117,8 +117,8 @@ void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
       double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h,kernel);
       // printf("W = %f\n", W);
       double mj = pj->param->mass;
-      double rhoi = pi->param->rho;
-      double rhoj = pj->param->rho;
+      double rhoi = pi->fields->rho;
+      double rhoj = pj->fields->rho;
 
       for(int d = 0; d < ui->DIM; d++){
         corr->X[d] += (2*mj)/(rhoi + rhoj)*(uj->X[d] - ui->X[d])*W;
@@ -137,7 +137,7 @@ double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
   double* rhs = (double*) malloc(sizeof(double)*n_p);
   for(int i = 0; i < n_p; i ++){
     Particle* pi = p[i];
-    double rho = pi->param->rho;
+    double rho = pi->fields->rho;
     double divergence_u = div_u(pi,kernel);
     // printf("div u = %f\n", divergence_u);
     rhs[i] = -rho*divergence_u;
@@ -150,8 +150,8 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** force_surface = get_force_surface(p, n_p, kernel);
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
-    double rho = pi->param->rho;
-    double viscosity = pi->param->dynamic_viscosity/pi->param->rho;
+    double rho = pi->fields->rho;
+    double viscosity = pi->param->dynamic_viscosity/pi->fields->rho;
     //TODO : Fix gradient de pression
     // printf("P = %f\n", pi->fields->P);
     Vector* grad_Pressure = grad_P(pi,kernel);
@@ -182,8 +182,8 @@ Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** force_surface = get_force_surface(p, n_p, kernel);
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
-    double rho = pi->param->rho;
-    double viscosity = pi->param->dynamic_viscosity/pi->param->rho;
+    double rho = pi->fields->rho;
+    double viscosity = pi->param->dynamic_viscosity/pi->fields->rho;
     Vector* grad_Pressure = CSPM_pressure(pi,kernel);
     times_into(grad_Pressure,-1);
     // printf("Gradient de pression %i: \n",i);
@@ -220,7 +220,7 @@ void CSPM_density(Particle** p, int n_p, Kernel kernel){
     while(current != NULL){
       Particle* pj = current->v;
       double mj = pj->param->mass;
-      double Vj = mj/pj->param->rho;
+      double Vj = mj/pj->fields->rho;
       double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);
       num += mj*W;
       den += W*Vj;
@@ -229,13 +229,13 @@ void CSPM_density(Particle** p, int n_p, Kernel kernel){
     rho_CSPM[i] = num/den;
   }
   for(int i = 0; i< n_p;i++){
-    p[i]->param->rho = rho_CSPM[i];
+    p[i]->fields->rho = rho_CSPM[i];
   }
   free(rho_CSPM);
 }
 
 Vector* CSPM_pressure(Particle* pi, Kernel kernel){
-  double rhoi = pi->param->rho;
+  double rhoi = pi->fields->rho;
   Vector* grad_Pressure = grad_P(pi,kernel);
   double num_x = 1e-8;
   double num_y = 1e-8;
@@ -244,7 +244,7 @@ Vector* CSPM_pressure(Particle* pi, Kernel kernel){
   ListNode* current = pi->neighbors->head;
   while(current != NULL){
     Particle* pj = current->v;
-    double Vj = pj->param->mass/pj->param->rho;
+    double Vj = pj->param->mass/pj->fields->rho;
     Vector* dW = grad_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);
     double xjxi = pj->fields->x->X[0] - pi->fields->x->X[0];
     double yjyi = pj->fields->x->X[1] - pi->fields->x->X[1];
@@ -275,7 +275,7 @@ void time_integration_mass(Particle** p, int n_p,double* rhs_mass,double dt){
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     double update = rhs_mass[i]*dt;
-    pi->param->rho += update;
+    pi->fields->rho += update;
   }
 }
 void time_integration_momentum(Particle** p, int n_p, Vector** rhs_momentum,double dt){

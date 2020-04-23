@@ -3,7 +3,7 @@
 double div_u(Particle* pi, Kernel kernel){
   double divergence = 0;
 
-  double rho_i = pi->param->rho;
+  double rho_i = pi->fields->rho;
   double h = pi->param->h;
   Vector* fi = pi->fields->u;
   Vector* xi = pi->fields->x;
@@ -33,7 +33,7 @@ Vector* grad_P(Particle* pi, Kernel kernel){
   Vector* grad = Vector_new(pi->fields->u->DIM);
 
   double fi = pi->fields->P;
-  double rho_i = pi->param->rho;
+  double rho_i = pi->fields->rho;
   double h = pi->param->h;
   Vector* xi = pi->fields->x;
 
@@ -44,7 +44,7 @@ Vector* grad_P(Particle* pi, Kernel kernel){
     Particle* pj = node->v;
     double fj = pj->fields->P;
     double mj = pj->param->mass;
-    double rho_j = pj->param->rho;
+    double rho_j = pj->fields->rho;
     Vector* xj = pj->fields->x;
 
     Vector* dW = grad_kernel(xi ,xj,h, kernel);
@@ -59,7 +59,7 @@ Vector* grad_P(Particle* pi, Kernel kernel){
     // Particle* pj = node->v;
     // double fj = pj->fields->P;
     // double mj = pj->param->mass;
-    // double rho_j = pj->param->rho;
+    // double rho_j = pj->fields->rho;
     // Vector* xj = pj->fields->x;
     //
     // Vector* dW = grad_kernel(xi ,xj,h, kernel);
@@ -88,7 +88,7 @@ Vector* lapl_u(Particle* pi, Kernel kernel){
   while(node != NULL){
     Particle* pj = node->v;
     double mj = pj->param->mass;
-    double rhoj = pj->param->rho;
+    double rhoj = pj->fields->rho;
     Vector* fj = pj->fields->u;
     Vector* xj = pj->fields->x;
 
@@ -125,7 +125,7 @@ Vector* lapl_u_Brookshaw(Particle* pi, Kernel kernel){
   while(node != NULL){
     Particle* pj = node->v;
     double mj = pj->param->mass;
-    double rhoj = pj->param->rho;
+    double rhoj = pj->fields->rho;
     Vector* fj = pj->fields->u;
     Vector* xj = pj->fields->x;
 

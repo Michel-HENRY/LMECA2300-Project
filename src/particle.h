@@ -26,7 +26,6 @@ struct Particle{
 };
 
 struct Parameters{
-  double rho;
   double mass;
   double dynamic_viscosity;
   double h;
@@ -42,6 +41,7 @@ struct Fields{
   Vector* f;
   double P;
   double Cs;
+  double rho;
 };
 
 struct Cell {
@@ -79,9 +79,9 @@ void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter);
 // -------------------------------------------------------------------
 // --------------------------- Parameters + fields--------------------
 // -------------------------------------------------------------------
-Parameters* Parameters_new(double rho, double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0);
+Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0);
 void Parameters_free(Parameters* param);
-Fields* Fields_new(Vector* x, Vector* u, Vector* f, double P);
+Fields* Fields_new(Vector* x, Vector* u, Vector* f, double P, double rho);
 void Fields_free(Fields* fields);
 
 // -------------------------------------------------------------------

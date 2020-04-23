@@ -1,52 +1,5 @@
 #include "particle.h"
 
-
-void Particle_validation(){
-  //particle domain
-  double l = 1.0;
-  // Grid definition
-  double L = 1.5;
-  double H = 1.5;
-
-  // Parameters
-  double rho = 1e3;
-  double dynamic_viscosity = 1e-3;
-  int n_p_dim = 10;
-  int n_p = n_p_dim*n_p_dim;
-  double h = l/(n_p_dim - 1); // step between neighboring particles
-	double mass = rho * h*h;
-
-  // Create Particles
-  Particle** particles = (Particle**) malloc(n_p*sizeof(Particle*));
-
-  for(int i = 0; i < n_p_dim; i++){
-    for(int j = 0; j < n_p_dim; j++){
-      int index = i*n_p_dim + j;
-      Parameters* param = Parameters_new(rho, mass, dynamic_viscosity, h, h, 0,0,0);
-      Vector* x = Vector_new(2);
-      Vector* u = Vector_new(2);
-      Vector* f = Vector_new(2);
-      double P = 0;
-      double pos[2] = {i*h,j*h};
-
-      Vector_initialise(x,pos);
-      Fields* fields = Fields_new(x,u,f,P);
-      particles[index] = Particle_new(param, fields);
-    }
-  }
-  // // Create GRID
-  Grid* grid = Grid_new(0, L, 0, H, h);
-  // // Link grid and particles
-  update_cells(grid, particles, n_p);
-	update_neighbors(grid, particles, n_p, 0);
-
-  // Free memory
-  Particles_free(particles, n_p);
-  printf("END FREE PARTICLES\n");
-  Grid_free(grid);
-  printf("END FREE GRID\n");
-}
-
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -185,9 +138,8 @@ void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter){
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 
-Parameters* Parameters_new(double rho, double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0){
+Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0){
   Parameters* param = (Parameters*) malloc(sizeof(Parameters));
-  param->rho = rho;
   param->mass = mass;
   param->dynamic_viscosity = dynamic_viscosity;
   param->h = h;
@@ -201,13 +153,14 @@ void Parameters_free(Parameters* param){
   free(param);
 }
 
-Fields* Fields_new(Vector* x, Vector* u, Vector* f, double P){
+Fields* Fields_new(Vector* x, Vector* u, Vector* f, double P, double rho){
   Fields* fields = (Fields*) malloc(sizeof(Fields));
   fields->x = x;
   fields->u = u;
   fields->f = f;
   fields->P = P;
   fields->Cs = 1;
+  fields->rho = rho;
 
   return fields;
 }
@@ -239,7 +192,6 @@ Particle* Particle_new(Parameters* param, Fields* fields){
 }
 void Particle_free(Particle* particle){
   // Cell are freed in the GRID
-  Parameters_free(particle->param);
   Fields_free(particle->fields);
   List_free(particle->neighbors,NULL);
   List_free(particle->potential_neighbors,NULL);
@@ -248,6 +200,7 @@ void Particle_free(Particle* particle){
 }
 
 void Particles_free(Particle** particles, int n_p){
+  Parameters_free(particles[0]->param);
   for(int i = 0; i < n_p; i++){
     Particle_free(particles[i]);
   }
