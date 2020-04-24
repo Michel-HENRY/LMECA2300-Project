@@ -52,7 +52,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
 	GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
 	animation->bov_particles = bov_particles_new(data, n_p, GL_DYNAMIC_DRAW);
-	bov_points_set_width(animation->bov_particles, R_p*2);
+	bov_points_set_width(animation->bov_particles, R_p);
 	bov_points_set_outline_width(animation->bov_particles, 0);
 
 	GLfloat(*data2)[2] = malloc(sizeof(data[0])*n_p*9);
@@ -263,13 +263,16 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
   // Update bov_particles
 	bov_window_t* window = animation->window;
 	int nbr = bov_window_get_counter(window);
+	bov_points_set_width(animation->bov_particles, particles[0]->param->Rp);
 	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_density, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_pressure, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_light, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
-	if(nbr%5 == 4)
+	if(nbr%5 == 4){
 		bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
+		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*2);
+	}
 	else if(nbr%5 == 3)
 		bov_text_set_color(animation->plot_light, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
 	else if(nbr%5 == 2)

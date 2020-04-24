@@ -52,13 +52,13 @@ void main()
 	//Faudra encore ajouter un cas pour quand on plot la pression etc
 	} else if(speedGeom.x == -1000) {//Il ne l'a pas encore je ne sais pas pq
 		outColor.a = 1;
-		outColor.a = (distToCenter+0.5)*0.2 + 0.8;/////////Utiliser pour le fluide
+		outColor.a = (distToCenter+0.5)*0.2 + 0.6;/////////Utiliser pour le fluide
 		if(distToCenter > 0.5){
-			outColor.a = 1;
+			outColor.a = 0.8;
 		}else if(distToCenter < 0.3){
 			outColor.a = 0;
 		}
-		outColor.a = 1;
+		//outColor.a = 0.6;
 		outColor.a *= alpha.x;
 	} else {
 		/*
