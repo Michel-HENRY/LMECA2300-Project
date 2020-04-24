@@ -143,7 +143,7 @@ int boundary_validation(){
   // ------------------------------------------------------------------
   double t = 0;
   double tEnd = 10;
-  double dt = 0.001;
+  double dt = 0.0003;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);

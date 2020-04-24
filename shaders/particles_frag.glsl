@@ -53,7 +53,7 @@ void main()
 			outColor.a = 0;
 		}
 	//Faudra encore ajouter un cas pour quand on plot la pression etc
-	} else if(speedGeom.x == -1000) {//Il ne l'a pas encore je ne sais pas pq
+	} else if(speedGeom.x == -1000) {//Plot de l'image
 		outColor.a = 1;
 		outColor.a = (distToCenter+0.5)*0.2 + 0.6;/////////Utiliser pour le fluide
 		if(distToCenter > 0.5){
@@ -63,6 +63,11 @@ void main()
 		}
 		//outColor.a = 0.6;
 		outColor.a *= alpha.x;
+
+	} else if(speedGeom.x == -2000){//Shadow particles
+		outColor = m;
+		outColor.a = 1;
+		outColor.a *= alpha.x;		
 	} else {
 		/*
 		float distToLight = 1 - length(posGeom + width/2)/width;//- length(abs(localPos + width/2)/2) + 0.5;
