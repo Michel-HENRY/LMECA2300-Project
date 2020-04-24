@@ -43,20 +43,32 @@ void main()
 	outColor.r = col.x;
 	outColor.g = col.y;
 	outColor.b = col.z;
-	outColor.a = (distToCenter+0.5)*0.2 + 0.8;
 	if(marker == 3){//Light particules
 		if(posGeom.x > 0 && posGeom.y > 0){
 			outColor.a = (distToCenter)*0.6 + 0.4;//*0.2 + 0.8;
 		} else {
 			outColor.a = 0;
 		}
-	} else {
+	//Faudra encore ajouter un cas pour quand on plot la pression etc
+	} else if(speedGeom.x == -1000) {//Il ne l'a pas encore je ne sais pas pq
 		outColor.a = 1;
+		outColor.a = (distToCenter+0.5)*0.2 + 0.8;/////////Utiliser pour le fluide
 		if(distToCenter > 0.5){
 			outColor.a = 1;
 		}else if(distToCenter < 0.3){
 			outColor.a = 0;
 		}
+		outColor.a = 1;
+		outColor.a *= alpha.x;
+	} else {
+		/*
+		float distToLight = 1 - length(posGeom + width/2)/width;//- length(abs(localPos + width/2)/2) + 0.5;
+		if(gl_Color.a == 0){
+			outColor.a = 0.5;
+		} else {
+			outColor.a = 1;
+		}*/
+		outColor.a = 1;
 		outColor.a *= alpha.x;
 	}
 }

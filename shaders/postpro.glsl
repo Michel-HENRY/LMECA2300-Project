@@ -24,8 +24,7 @@ uniform sampler2D framebuffer;
 
 out vec4 outColor;
 
-void main()
-{
+void main() {
 	outColor = texture(framebuffer, gl_FragCoord.xy/resolution).rgba; // directly show frambuffer
 }
 

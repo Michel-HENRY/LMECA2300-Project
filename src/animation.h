@@ -9,6 +9,7 @@
 // see stringification process
 #define xstr(s) str(s)
 #define str(s) #s
+#define PI 3.1415926535897932
 
 typedef struct Animation Animation;
 
@@ -22,6 +23,8 @@ struct Animation {
     bov_text_t* plot_none;
     bov_text_t* plot_density;
     bov_text_t* plot_pressure;
+    bov_text_t* plot_light;
+    bov_text_t* plot_liquid;
     bov_points_t* shadow;
     bov_points_t* light;
 };
