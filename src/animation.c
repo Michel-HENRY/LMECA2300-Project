@@ -57,7 +57,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
 	GLfloat(*data2)[2] = malloc(sizeof(data[0])*n_p*9);
 	animation->shadow = bov_points_new(data2, n_p*9, GL_DYNAMIC_DRAW);
-	bov_points_set_color(animation->shadow,(GLfloat[]){0.0, 0.0, 0.0, 1.0});
+	bov_points_set_color(animation->shadow,(GLfloat[]){0.0, 0.0, 0.0, 0.75});
 	bov_points_set_width(animation->shadow, 1e-10);
 
 	GLfloat(*data3)[8] = malloc(sizeof(data[0]));

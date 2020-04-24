@@ -89,7 +89,7 @@ Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain
 int boundary_validation(){
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 50;                       // Nombre moyen de particule par dimension
+  int n_p_dim = 20;                       // Nombre moyen de particule par dimension
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
@@ -98,8 +98,8 @@ int boundary_validation(){
   int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*ly;
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
-  double h = lx/(n_p_dim_x);                // step between neighboring particles
-  double kh = sqrt(21)*lx/(n_p_dim_x);      // Rayon du compact pour l'approximation
+  double h = lx/(n_p_dim_x*2);                // step between neighboring particles
+  double kh = sqrt(21)*lx/(n_p_dim_x*2);      // Rayon du compact pour l'approximation
   double mass = rho_0 * h*h;              // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1

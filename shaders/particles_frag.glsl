@@ -45,7 +45,10 @@ void main()
 	outColor.b = col.z;
 	if(marker == 3){//Light particules
 		if(posGeom.x > 0 && posGeom.y > 0){
-			outColor.a = (distToCenter)*0.6 + 0.4;//*0.2 + 0.8;
+			if(distToCenter > 0.95){
+				outColor.a = 1;
+			} else
+				outColor.a = (distToCenter)*0.6 + 0.4;//*0.2 + 0.8;
 		} else {
 			outColor.a = 0;
 		}
