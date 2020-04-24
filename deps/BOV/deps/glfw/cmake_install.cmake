@@ -1,4 +1,4 @@
-# Install script for directory: /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glfw
+# Install script for directory: /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glfw
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glfw/src/cmake_install.cmake")
+  include("/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glfw/src/cmake_install.cmake")
 
 endif()
 

@@ -1,4 +1,4 @@
-# Install script for directory: /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glfw/src
+# Install script for directory: /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glfw/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

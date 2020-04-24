@@ -31,6 +31,32 @@ void main()
 {
 	float sdf = length(posGeom) - width;
 	vec2 alpha = smoothstep(-pixelSize, pixelSize, -sdf - vec2(0.0f, outlineWidth));
-	outColor = mix(outlineColor, dataGeom, alpha.y);
-	outColor.a *= alpha.x;
+	float distToCenter = 1-(length(abs(localPos-posGeom))/width);
+	//outColor = vec4(distToCenter, 0, 0, 1);
+	//outColor = dataGeom*distToCenter*2;
+	//outColor = distToCenter*alpha.y;
+	vec4 m = mix(outlineColor, dataGeom, alpha.y);
+	//outColor = m;
+	vec3 col = vec3(m.r, m.g, m.b);
+	col = col/length(col);
+	col = col/length(col);
+	outColor.r = col.x;
+	outColor.g = col.y;
+	outColor.b = col.z;
+	outColor.a = (distToCenter+0.5)*0.2 + 0.8;
+	if(marker == 3){//Light particules
+		if(posGeom.x > 0 && posGeom.y > 0){
+			outColor.a = (distToCenter)*0.6 + 0.4;//*0.2 + 0.8;
+		} else {
+			outColor.a = 0;
+		}
+	} else {
+		outColor.a = 1;
+		if(distToCenter > 0.5){
+			outColor.a = 1;
+		}else if(distToCenter < 0.3){
+			outColor.a = 0;
+		}
+		outColor.a *= alpha.x;
+	}
 }

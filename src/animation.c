@@ -1,62 +1,121 @@
 #include "animation.h"
 
-
-static double P_max(Particle** p, int n_p){
-  double Pmax = p[0]->fields->P;
-  for(int i = 1; i < n_p ; i++){
-    // printf("i = %d/%d\n",i,n_p);
-    if(p[i]->fields->P > Pmax){
-      Pmax = p[i]->fields->P;
-    }
-  }
-  return Pmax;
-}
-static double P_min(Particle** p, int n_p){
-  double Pmin = p[0]->fields->P;
-  for(int i = 1; i < n_p ; i++){
-    // printf("i = %d/%d\n",i,n_p);
-    if(p[i]->fields->P < Pmin){
-      Pmin = p[i]->fields->P;
-    }
-  }
-  return Pmin;
+double P_max(Particle** p, int n_p){
+	double Pmax = p[0]->fields->P;
+	for(int i = 1; i < n_p ; i++){
+		if(p[i]->fields->P > Pmax){
+			Pmax = p[i]->fields->P;
+		}
+	}
+	return Pmax;
 }
 
+double P_min(Particle** p, int n_p){
+	double Pmin = p[0]->fields->P;
+	for(int i = 1; i < n_p ; i++){
+		if(p[i]->fields->P < Pmin){
+			Pmin = p[i]->fields->P;
+		}
+	}
+	return Pmin;
+}
+
+double rho_max(Particle** p, int n_p){
+	double rmax = p[0]->fields->rho;
+	for(int i = 1; i < n_p ; i++){
+		if(p[i]->fields->rho > rmax){
+			rmax = p[i]->fields->rho;
+		}
+	}
+	return rmax;
+}
+
+double rho_min(Particle** p, int n_p){
+	double rmin = p[0]->fields->rho;
+	for(int i = 1; i < n_p ; i++){
+		if(p[i]->fields->rho < rmin){
+			rmin = p[i]->fields->rho;
+		}
+	}
+	return rmin;
+}
 
 Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double domain[4]){
-  Animation* animation = (Animation*) malloc(sizeof(Animation));
+	Animation* animation = (Animation*) malloc(sizeof(Animation));
 
-  animation->timeout = timeout;
-  animation->n_p = n_p;
+	animation->timeout = timeout;
+	animation->n_p = n_p;
 
-  animation->window = bov_window_new(1024, 780, "Project: SPH");
-  bov_window_set_color(animation->window, (GLfloat[]){0.9f, 0.85f, 0.8f, 0.0f});
-  bov_window_enable_help(animation->window);
+	animation->window = bov_window_new(1024, 780, "Project: SPH");
+	bov_window_set_color(animation->window, (GLfloat[]){0.0, 0.0f, 0.0f, 0.0f});
+	bov_window_enable_help(animation->window);
 
-  GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
-  animation->bov_particles = bov_particles_new(data, n_p, GL_DYNAMIC_DRAW);
-  bov_points_set_width(animation->bov_particles, R_p);
-  free(data);
+	GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
+	animation->bov_particles = bov_particles_new(data, n_p, GL_DYNAMIC_DRAW);
+	bov_points_set_width(animation->bov_particles, R_p*2);
+	bov_points_set_outline_width(animation->bov_particles, 0);
 
-  animation->domain = load_Domain(domain);
-  bov_points_set_width(animation->domain, 0.0005);
-  bov_points_set_color(animation->domain,(GLfloat[]){1.0, 0.0, 0.0, 1.0});
+	GLfloat(*data2)[2] = malloc(sizeof(data[0])*n_p*3);
+	animation->shadow = bov_points_new(data2, n_p*2, GL_DYNAMIC_DRAW);
+	bov_points_set_color(animation->shadow,(GLfloat[]){0.0, 0.0, 0.0, 1.0});
+	bov_points_set_width(animation->shadow, 1e-10);
 
-  if (grid != NULL){
-    animation->grid = load_Grid(grid);
-  }
+	GLfloat(*data3)[8] = malloc(sizeof(data[0]));
+	data3[0][0] = 0; data3[0][1] = 0;
+	data3[0][2] = 0; data3[0][3] = 0; 
+	data3[0][4] = 0.98f; data3[0][5] = 0.87f;
+	data3[0][6] = 0.137f; data3[0][2] = 1; 
+	animation->light = bov_particles_new(data3, 1, GL_STATIC_DRAW);
+	bov_points_set_color(animation->light,(GLfloat[]){0.98f, 0.87f, 0.137f, 1.0});
+	bov_points_set_outline_color(animation->light, (GLfloat[]){0.98f, 0.87f, 0.137f, 1.0});
+	bov_points_set_marker(animation->light, 3);
+	bov_points_set_width(animation->light, 1);
+
+	free(data);
+	free(data2);
+	animation->domain = load_Domain(domain);
+	bov_points_set_width(animation->domain, 0.0005);
+	bov_points_set_color(animation->domain,(GLfloat[]){1.0f, 0.0f, 0.0f, 1.0});
+
+	if (grid != NULL){
+		animation->grid = load_Grid(grid);
+	}
 	else{
-    animation->grid = NULL;
-  }
+		animation->grid = NULL;
+	}
 
-  return animation;
+	animation->plot_none = bov_text_new((GLubyte[]) {
+		"None\n"
+	}, GL_STATIC_DRAW);
+
+	animation->plot_pressure = bov_text_new((GLubyte[]) {
+		"Pressure\n"
+	}, GL_STATIC_DRAW);
+
+	animation->plot_density = bov_text_new((GLubyte[]) {
+		"Density\n"
+	}, GL_STATIC_DRAW);
+	bov_text_set_space_type(animation->plot_none, PIXEL_SPACE);bov_text_set_space_type(animation->plot_pressure, PIXEL_SPACE);bov_text_set_space_type(animation->plot_density, PIXEL_SPACE);
+	bov_text_set_fontsize(animation->plot_none, 16.0f);bov_text_set_fontsize(animation->plot_pressure, 16.0f);bov_text_set_fontsize(animation->plot_density, 16.0f);
+	bov_text_set_pos(animation->plot_none, (GLfloat[2]){16.0f, 700.0f});
+	bov_text_set_pos(animation->plot_pressure, (GLfloat[2]){16.0f, 720.0f});
+	bov_text_set_pos(animation->plot_density, (GLfloat[2]){16.0f, 740.0f});
+	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
+  //bov_text_set_outline_width(window->indication, 0.5f);
+
+	return animation;
 }
 
 void Animation_free(Animation* animation){
-  bov_points_delete(animation->bov_particles);
-  if(animation->domain = NULL){
-    bov_points_delete(animation->domain);
-  }
+	bov_points_delete(animation->bov_particles);
+	bov_points_delete(animation->shadow);
+	bov_points_delete(animation->light);
+	bov_text_delete(animation->plot_density);
+	bov_text_delete(animation->plot_none);
+	bov_text_delete(animation->plot_pressure);
+	if(animation->domain = NULL){
+		bov_points_delete(animation->domain);
+	}
 	if(animation->grid != NULL)
 		bov_points_delete(animation->grid);
 	bov_window_delete(animation->window);
@@ -64,15 +123,15 @@ void Animation_free(Animation* animation){
 }
 bov_points_t* load_Domain(double domain[4]){
   // domain = [left, right, bottom, top]
-  GLfloat(*data)[2] = malloc(sizeof(data[0])*4);
-  data[0][0] = domain[0];   data[1][0] = domain[1];
-  data[0][1] = domain[2];   data[1][1] = domain[2];
+	GLfloat(*data)[2] = malloc(sizeof(data[0])*4);
+	data[0][0] = domain[0];   data[1][0] = domain[1];
+	data[0][1] = domain[2];   data[1][1] = domain[2];
 
-  data[3][0] = domain[0];   data[2][0] = domain[1];
-  data[3][1] = domain[3];   data[2][1] = domain[3];
+	data[3][0] = domain[0];   data[2][0] = domain[1];
+	data[3][1] = domain[3];   data[2][1] = domain[3];
 
-  bov_points_t *points = bov_points_new(data, 4, GL_STATIC_DRAW);
-  free(data);
+	bov_points_t *points = bov_points_new(data, 4, GL_STATIC_DRAW);
+	free(data);
 	return points;
 }
 
@@ -103,88 +162,128 @@ bov_points_t* load_Grid(Grid* grid){
 }
 
 static void colormap(float v, float color[3]){
-  float v1 = 3.5*(v-0.7);
+	float v1 = 3.5*(v-0.7);
 	float v2 = 1.25*v;
 	float v3 = fminf(0.5,v)*2.0;
 
-	// color[0] = -v1*v1+1.0f;
-	// color[1] = 6.0f*v2*v2*(1.0f-v2);
-	// color[2] = 5.5f*v3*(1.0f-v3)*(1.0f-v3);
+  // color[0] = -v1*v1+1.0f;
+  // color[1] = 6.0f*v2*v2*(1.0f-v2);
+  // color[2] = 5.5f*v3*(1.0f-v3)*(1.0f-v3);
 
-	/* alternative: classical jet colormap */
+  /* alternative: classical jet colormap */
 	color[0] = 1.5 - 4.0 * fabs(v - 0.75);
 	color[1] = 1.5 - 4.0 * fabs(v - 0.5 );
 	color[2] = 1.5 - 4.0 * fabs(v - 0.25);
 }
 
-static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
-  double Pmax = P_max(particles, n_p);
-  double Pmin = P_min(particles, n_p);
+static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particles, int n_p, int mask){
+	double light_X = 0.0;
+	double light_Y = 0.0;
+
+	double P_M = P_max(particles, n_p);
+	double P_m = P_min(particles, n_p);
+	double r_M = rho_max(particles, n_p);
+	double r_m = rho_min(particles, n_p);
 	for(int i=0; i<n_p; i++) {
-    // printf("i = %d/%d\n",i,n_p);
-    Particle* p = particles[i];
-		data[i][0] = p->fields->x->X[0]; // x (rand between -100 and 100)
-		data[i][1] = p->fields->x->X[1]; // y (rand between -100 and 100)
-		data[i][2] = p->fields->u->X[0]; // speed x (not used by default visualization)
-		data[i][3] = p->fields->u->X[1]; // speed y (not used by default visualization)
-		data[i][4] = 0;
-		data[i][5] = 0;
-		data[i][6] = 0;
-		// data[i][7] = 0;
-    double P = p->fields->P;
-    double field;
-    if(Pmax == Pmin){
-      field = P-Pmin;
-    }
-    else{
-      field = (P - Pmin)/(Pmax - Pmin);
-    }
-		colormap(field, &data[i][4]); // fill color
-    // colormap(p->fields->Cs, &data[i][4]);
-		data[i][7] = 0.8f; // transparency
-  }
+		Particle* p = particles[i];
+	    data[i][0] = p->fields->x->X[0]; // x (rand between -100 and 100)
+	    data[i][1] = p->fields->x->X[1]; // y (rand between -100 and 100)
+	    data[i][2] = p->fields->u->X[0]; // speed x (not used by default visualization)
+	    data[i][3] = p->fields->u->X[1]; // speed y (not used by default visualization)
+	    data[i][4] = 0;
+	    data[i][5] = 0;
+	    data[i][6] = 0;
+	    // data[i][7] = 0;
+	    if(mask%3 == 2)
+	      colormap((p->fields->rho-r_m)/(r_M-r_m), &data[i][4]); // fill colormap
+	  	else if(mask%3 == 1)
+	      colormap((p->fields->P-P_m)/(P_M-P_m), &data[i][4]); // fill colormap
+	  	else
+	      colormap(0.2, &data[i][4]); // fill colormap
+	      // colormap(p->fields->Cs, &data[i][4]);
+	    data[i][7] = 0.8f; // transparency
+
+	    //Shadow
+	    double x = p->fields->x->X[0];
+	    double y = p->fields->x->X[1];
+	    data2[3*i][0] = x;
+	    data2[3*i][1] = y;
+	    double dist = sqrt((x-light_X)*(x-light_X) + (y-light_Y)*(y-light_Y));
+	    double theta = atan((y-light_Y)/(x-light_X));
+	    double alpha = atan(p->param->Rp / dist);
+	    data2[3*i + 1][0] = 1 + light_X;
+	    data2[3*i + 1][1] = 1*tan(theta-alpha) + light_Y;
+	    data2[3*i + 2][0] = 1 + light_X;
+	    data2[3*i + 2][1] = 1*tan(theta+alpha) + light_Y;
+	}
 }
 void show(Particle** particles, Animation* animation, int iter, bool wait, bool grid){
-  int n_p = animation->n_p;
+	int n_p = animation->n_p;
   // Update bov_particles
-  GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
-	fillData(data, particles, n_p);
-  bov_points_t* bov_particles = animation->bov_particles;
-  bov_particles = bov_particles_update(bov_particles, data,n_p);
-  free(data);
+	bov_window_t* window = animation->window;
+	int nbr = bov_window_get_counter(window);
+	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.0f, 0.0f, 0.0f, 1.0f});
+	bov_text_set_color(animation->plot_density, (GLfloat[4]){0.0f, 0.0f, 0.0f, 1.0f});
+	bov_text_set_color(animation->plot_pressure, (GLfloat[4]){0.0f, 0.0f, 0.0f, 1.0f});
+	if(nbr%3 == 2)
+		bov_text_set_color(animation->plot_density, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
+	else if(nbr%3 == 1)
+		bov_text_set_color(animation->plot_pressure, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
+	else
+		bov_text_set_color(animation->plot_none, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
 
-  // To make the screenshot
-  char screenshot_name[64] = "animation_";
+	GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
+	GLfloat(*data2)[2] = malloc(sizeof(data2[0])*n_p*3);
+	fillData(data, data2, particles, n_p, nbr);
+	bov_points_t* bov_particles = animation->bov_particles;
+	bov_particles = bov_particles_update(bov_particles, data,n_p);
+	bov_points_t* shadow = animation->shadow;
+	shadow = bov_points_update(shadow, data2, n_p*3);
+	free(data);
+
+  	// To make the screenshot
+
+	char screenshot_name[64] = "animation_";
 	char int_string[32];
 	sprintf(int_string, "%d", iter);
 	strcat(screenshot_name, int_string);
-
-  bov_window_t* window = animation->window;
-  double tbegin = bov_window_get_time(window);
-  double timeout = animation->timeout;
-
-
-  if(!wait){
-    while(bov_window_get_time(window) - tbegin < timeout){
-      if(animation->grid != NULL && grid)
+	double tbegin = bov_window_get_time(window);
+	double timeout = animation->timeout;
+	if(!wait){
+		while(bov_window_get_time(window) - tbegin < timeout){
+			if(animation->grid != NULL && grid)
 				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
-    bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
-    bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
-    if (iter%500 == 0) {
-      bov_window_screenshot(window, screenshot_name);
-    }
-    bov_window_update(window);
-    }
-	}
-  else {
+			//bov_fast_triangle_fan_draw(window, animation->domain, 0, BOV_TILL_END);
+			bov_particles_draw(window, animation->light, 0, BOV_TILL_END);
+			bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
+			bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
+			bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
+			bov_text_draw(window, animation->plot_none);
+			bov_text_draw(window, animation->plot_pressure);
+			bov_text_draw(window, animation->plot_density);
+			if (iter%10 == 0) {
+				bov_window_screenshot(window, screenshot_name);
+			}
+			bov_window_update(window);
+		}
+	} else {
     // we want to keep the window open with everything displayed
-    while (!bov_window_should_close(window)) {
-      if (animation->grid != NULL && grid)
-        bov_lines_draw(window, animation->grid, 0, BOV_TILL_END);
-      bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
-      bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
-      bov_window_screenshot(window, screenshot_name);
-      bov_window_update_and_wait_events(window);
-    }
-  }
+		while (!bov_window_should_close(window)) {
+			if (animation->grid != NULL && grid)
+				bov_lines_draw(window, animation->grid, 0, BOV_TILL_END);
+			//bov_triangle_fan_draw(window, animation->domain, 0, BOV_TILL_END);
+			bov_particles_draw(window, animation->light, 0, BOV_TILL_END);
+			bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
+			bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
+			bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
+			bov_text_draw(window, animation->plot_none);
+			bov_text_draw(window, animation->plot_pressure);
+			bov_text_draw(window, animation->plot_density);
+			bov_window_screenshot(window, screenshot_name);
+			bov_window_update_and_wait_events(window);
+		}
+	}
 }
+/*
+Pour la lumiere on va mettre une particule géante :o
+*/

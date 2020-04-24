@@ -6,9 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/examples/lines.c
+/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/examples/lines.c
 BOV.h
-/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/examples/BOV.h
+/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/examples/BOV.h
 math.h
 -
 
