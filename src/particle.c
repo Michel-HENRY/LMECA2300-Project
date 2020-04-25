@@ -138,7 +138,7 @@ void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter){
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 
-Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0){
+Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0, double g){
   Parameters* param = (Parameters*) malloc(sizeof(Parameters));
   param->mass = mass;
   param->dynamic_viscosity = dynamic_viscosity;
@@ -147,6 +147,7 @@ Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, doub
   param->tension = tension;
   param->treshold = treshold;
   param->P0 = P0;
+	param->g = g;
   return param;
 }
 void Parameters_free(Parameters* param){

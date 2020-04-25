@@ -35,7 +35,7 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
         Vector* u = Vector_new(2);
         Vector* f = Vector_new(2);
 
-        f->X[1] = -g;
+        // f->X[1] = -g*rho;
 
         double Rp = param->Rp;
         if (isUniform){
@@ -111,7 +111,7 @@ int boundary_validation(){
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
   // ------------------------------------------------------------------
-  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0);
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,false);
 
   // ------------------------------------------------------------------
@@ -185,7 +185,7 @@ int SPH_operator_validation(){
 
   // Parameters
   double rho_0 = 1;                       // Densité initiale
-  double dynamic_viscosity = 10;           // Viscosité dynamique
+  double dynamic_viscosity = 1;           // Viscosité dynamique
   double g = 0.00;                        // Gravité
   int n_p_dim_x = n_p_dim*lx;             // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*ly;
@@ -202,7 +202,7 @@ int SPH_operator_validation(){
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
   // ------------------------------------------------------------------
-  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0);
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold, P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
 
   // Impose linear gradient pressure :
@@ -210,9 +210,9 @@ int SPH_operator_validation(){
     double x,y;
     x = particles[i]->fields->x->X[0];
     y = particles[i]->fields->x->X[1];
-    // particles[i]->fields->P = 2*x + y;
-    // particles[i]->fields->u->X[0] = x;
-    particles[i]->fields->u->X[1] = x*x;
+    particles[i]->fields->P = y;
+    particles[i]->fields->u->X[0] = x*x;
+    particles[i]->fields->u->X[1] = y*y;
   }
 
   // ------------------------------------------------------------------
@@ -259,18 +259,18 @@ int SPH_operator_validation(){
   double min = 0;
   for(int i = 0; i < n_p ; i++){
     // Vector* gradP = grad_P(particles[i], kernel);         //Pas précis
-    // Vector* gradP = CSPM_pressure(particles[i], kernel);  //Ordre 1 sur les noeuds intérieurs
-    // Vector_print(gradP[i]);
-    // Vector_free(gradP);
+    Vector* gradP = CSPM_pressure(particles[i], kernel);  //Ordre 1 sur les noeuds intérieurs
+    Vector_print(gradP);
+    Vector_free(gradP);
 
 
-    Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
-    Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
-    printf("----------------\n");
-    Vector_print(lapl_s);
-    Vector_print(lapl);
-    Vector_free(lapl);
-    Vector_free(lapl_s);
+    // Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
+    // Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
+    // printf("----------------\n");
+    // // Vector_print(lapl_s);
+    // Vector_print(lapl);
+    // Vector_free(lapl);
+    // Vector_free(lapl_s);
 
     // double divergence = div_u(particles[i],kernel);
     // printf("div = %f\n",divergence);
@@ -297,28 +297,29 @@ int SPH_operator_validation(){
 int dam_break(){
   double lx = 0.114;                          // Longueur du domaine de particule
   double ly = 0.228;                          // Hauteur du domaine de particle
-  int n_p_dim = 25;
+  int n_p_dim = 36;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
   double dynamic_viscosity = 1e-3;        // Viscosité dynamique
   double g = 9.81;                        // Gravité
-  int n_p_dim_x = n_p_dim;             // Nombre de particule par dimension
+  int n_p_dim_x = n_p_dim;                // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*(ly/lx);
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
   double h = lx/n_p_dim_x;                // step between neighboring particles
-  double kh = 2*sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
-  double mass = rho_0*h*h;              // Masse d'une particule, constant
+  double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
+  // double kh = 4*h;
+  double mass = rho_0*h*h;                // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
-  double tension = 0; //72*1e-3;               // Tension de surface de l'eau
+  double tension = 0 ;//7*1e-2;                     // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
   // ------------------------------------------------------------------
-  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold,P0);
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold,P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
 
   // ------------------------------------------------------------------
@@ -337,21 +338,21 @@ int dam_break(){
   // ------------------------ SET Grid --------------------------------
   // ------------------------------------------------------------------
   double extra = 0.0;
-  extra = 0.5;
+  extra = 0.05;
   Grid* grid = Grid_new(0-extra, L+extra, 0-extra, H+extra, kh);
 
   // ------------------------------------------------------------------
   // ------------------------ SET Animation ---------------------------
   // ------------------------------------------------------------------
-  double timeout = 0.0001;                 // Durée d'une frame
+  double timeout = 0.00001;                 // Durée d'une frame
   Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
 
   // ------------------------------------------------------------------
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 10;
-  double dt = 0.0001;
+  double tEnd = 1;
+  double dt = 1e-5;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
@@ -365,10 +366,11 @@ int dam_break(){
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
     update_pressureDam(particles, n_p, rho_0, g, H);
+    // update_pressure(particles, n_p, rho_0, g, H);
+    // update_pressureMod(particles, n_p, rho_0);
+    // Tait(particles, n_p, rho_0);
     // time_integration(particles, n_p, kernel, dt, edges);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
-    if (i%output == 0)
-      show(particles, animation, i, false, false);
     printf("Time integration completed\n");
 
     i++;

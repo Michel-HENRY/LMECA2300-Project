@@ -70,12 +70,13 @@ void update_pressure(Particle** p, int n_p, double rho_0, double g, double H){
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
-    double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
+    double qrho = fmax(rho/rho_0, 1);
+    double Pdyn = B*(pow(qrho,gamma) - 1);
 
     double y = pi->fields->x->X[1];
     double Phydro = rho*g*(H - y);
 
-    pi->fields->P = (Pdyn + pi->param->P0) + Phydro;
+    pi->fields->P = (Pdyn) + Phydro;
   }
 }
 void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H){
@@ -85,25 +86,42 @@ void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H)
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
-    double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
+    // double qrho = fmax(rho/rho_0, 1);
+    double qrho = rho/rho_0;
+    double Pdyn = B*(pow(qrho,gamma) - 1);
 
     double y = pi->fields->x->X[1];
     double Phydro = rho*g*(H - y);
 
-    pi->fields->P = (Pdyn + pi->param->P0) + Phydro;
+    pi->fields->P = (Pdyn) + Phydro;
   }
 }
 void update_pressureMod(Particle** p, int n_p, double rho_0){
-    double gamma = 7;
-    double c = 1500;
-    double B = rho_0*c*c/gamma;
-    for(int i = 0; i < n_p ; i++){
-      Particle* pi = p[i];
-      double rho = pi->fields->rho;
-      double Pdyn = B*(pow(rho/rho_0,gamma) - 1);
+  double gamma = 7;
+  double c = 1500;
+  double B = rho_0*c*c/gamma;
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    double rho = pi->fields->rho;
+    double qrho = fmax(rho/rho_0, 1);
+    double Pdyn = B*(pow(qrho,gamma) - 1);
 
-      pi->fields->P = Pdyn + pi->param->P0;
-    }
+    pi->fields->P = Pdyn;
+  }
+}
+void Tait(Particle** p, int n_p, double rho_0){
+  double gamma = 7;
+  // double c = 1500;
+  // double B = rho_0*c*c/gamma;
+  double B = 1e5;
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    double rho = pi->fields->rho;
+    double qrho = rho/rho_0;
+    double Pdyn = B*(pow(qrho,gamma) - 1);
+
+    pi->fields->P = Pdyn;
+  }
 }
 static void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
   for(int i = 0; i < n_p; i++){
@@ -183,23 +201,22 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
-    double viscosity = pi->param->dynamic_viscosity/pi->fields->rho;
+    double nu = pi->param->dynamic_viscosity/pi->fields->rho;
 
     // Pressure Gradient
     Vector* grad_Pressure = CSPM_pressure(pi,kernel);
-    times_into(grad_Pressure,-1);
-    // printf("Gradient de pression %i: \n",i);
-    // Vector_print(grad_Pressure);
+    times_into(grad_Pressure,-1/rho);
+
 
     // Viscosity forces
     Vector* laplacian_u = lapl_u(pi,kernel);
-    times_into(laplacian_u, viscosity);
-    // printf("Laplacian %i :\n", i);
-    // Vector_print(laplacian_u);
+    times_into(laplacian_u, nu);
 
     // Surfaces forces
     Vector* forces = pi->fields->f;
-    sum_into(forces, force_surface[i]);
+    forces->X[1] = -pi->param->g*rho;         // Add gravity
+    sum_into(forces, force_surface[i]);    // Add surface tension
+    times_into(forces, 1/rho);                // Dv/Dt = ... + F/rho
 
     // Artificial viscosity
     double a = 0.3;
@@ -212,6 +229,16 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
     sum_into(rhs[i],laplacian_u);
     sum_into(rhs[i],forces);
     sum_into(rhs[i],pij);
+
+    // printf("Gradient de pression %i: \n",i);
+    // Vector_print(grad_Pressure);
+    // printf("Laplacian %i :\n", i);
+    // Vector_print(laplacian_u);
+    // printf("Forces %i\n", i);
+    // Vector_print(forces);
+    // printf("Viscosite artificielle %i\n", i);
+    // Vector_print(pij);
+
 
    Vector_free(grad_Pressure);
    Vector_free(laplacian_u);
@@ -248,7 +275,7 @@ static void CSPM_density(Particle** p, int n_p, Kernel kernel){
   free(rho_CSPM);
 }
 
-static Vector* CSPM_pressure(Particle* pi, Kernel kernel){
+Vector* CSPM_pressure(Particle* pi, Kernel kernel){
   double rhoi = pi->fields->rho;
   Vector* grad_Pressure = grad_P(pi,kernel);
 
@@ -267,8 +294,8 @@ static Vector* CSPM_pressure(Particle* pi, Kernel kernel){
       Vector_free(dW);
       current = current->next;
     }
-    num_x = grad_Pressure->X[0]/rhoi;
-    num_y = grad_Pressure->X[1]/rhoi;
+    num_x = grad_Pressure->X[0];
+    num_y = grad_Pressure->X[1];
 
     grad_Pressure->X[0] = num_x/den_x;
     grad_Pressure->X[1] = num_y/den_y;
@@ -346,7 +373,20 @@ void time_integration_position(Particle** p, int n_p, double dt){
     Vector_free(update);
   }
 }
+void density(Particle** p, int n_p, Kernel kernel){
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    double rho = 0;
+    ListNode* current = pi->neighbors->head;
 
+    while (current != NULL) {
+      Particle* pj = current->v;
+      double W = eval_kernel(pi->fields->x,pj->fields->x, pi->param->h, kernel);
+      rho += pj->param->mass * W;
+      current = current->next;
+    }
+  }
+}
 void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
   Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
   double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
@@ -371,6 +411,7 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
 
   double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
   time_integration_mass(p,n_p,rhs_mass,dt);
+  // density(p,n_p,kernel);
   CSPM_density(p,n_p, kernel);
 
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);

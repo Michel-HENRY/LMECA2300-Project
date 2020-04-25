@@ -35,10 +35,13 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
   GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
   animation->bov_particles = bov_particles_new(data, n_p, GL_DYNAMIC_DRAW);
+  bov_points_set_pos(animation->bov_particles, (GLfloat[2]){-0.2,-0.2});
   bov_points_set_width(animation->bov_particles, R_p);
+
   free(data);
 
   animation->domain = load_Domain(domain);
+  bov_points_set_pos(animation->domain, (GLfloat[2]){-0.2,-0.2});
   bov_points_set_width(animation->domain, 0.0005);
   bov_points_set_color(animation->domain,(GLfloat[]){1.0, 0.0, 0.0, 1.0});
 
@@ -134,7 +137,7 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
     double P = p->fields->P;
     double field;
     if(Pmax == Pmin){
-      field = P-Pmin;
+      field = 0.0;
     }
     else{
       field = (P - Pmin)/(Pmax - Pmin);
@@ -154,12 +157,13 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
   free(data);
 
   // To make the screenshot
-  char screenshot_name[64] = "animation_";
+  char screenshot_name[64] = "dam_break_";
 	char int_string[32];
 	sprintf(int_string, "%d", iter);
 	strcat(screenshot_name, int_string);
 
   bov_window_t* window = animation->window;
+  bov_window_set_zoom(window,(GLfloat) 3);
   double tbegin = bov_window_get_time(window);
   double timeout = animation->timeout;
 
@@ -170,7 +174,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
     bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
     bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
-    if (iter%500 == 0) {
+    if (iter%1000 == 0) {
       bov_window_screenshot(window, screenshot_name);
     }
     bov_window_update(window);

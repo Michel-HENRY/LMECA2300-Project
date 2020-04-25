@@ -23,7 +23,7 @@ Vector** get_force_surface(Particle** p, int n_p, Kernel kernel){
         forces[i]->X[d] = -(tension*kappa)*n->X[d];
       }
       // La pression a la surface libre est nulle !!!
-      p[i]->fields->P = p[i]->param->P0;
+      // p[i]->fields->P = p[i]->param->P0;
     }
     Vector_free(n);
   }

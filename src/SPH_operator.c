@@ -38,7 +38,6 @@ Vector* grad_P(Particle* pi, Kernel kernel){
   ListNode* node = pi->neighbors->head;
   while(node != NULL){
 
-    // Order -1 method
     Particle* pj = node->v;
     double fj = pj->fields->P;
     double mj = pj->param->mass;
@@ -55,6 +54,7 @@ Vector* grad_P(Particle* pi, Kernel kernel){
 
     node = node->next;
   }
+  times_into(grad, rho_i);
   return grad;
 }
 
@@ -79,8 +79,10 @@ Vector* lapl_u(Particle* pi, Kernel kernel){
     Vector* fi_fj = diff(fi,fj);
     Vector* xi_xj = diff(xi,xj);
     double dist_xixj = dist(xi,xj);
-    double coeff = mj/rhoj * dot(xi_xj, dW)/(dist_xixj*dist_xixj + eta*eta);
-    Vector* inner = times(fi_fj,coeff);
+    // double coeff = mj/rhoj * dot(xi_xj, dW)/(dist_xixj*dist_xixj + eta*eta);
+    double coeff = mj/rhoj * dot(xi_xj, fi_fj)/(dist_xixj*dist_xixj + eta*eta);
+    // Vector* inner = times(fi_fj,coeff);
+    Vector* inner = times(dW, coeff);
 
     sum_into(lapl,inner);
 
@@ -91,7 +93,7 @@ Vector* lapl_u(Particle* pi, Kernel kernel){
 
     node = node->next;
   }
-  times_into(lapl,2.0);
+  times_into(lapl,2*(fi->DIM+2));
   return lapl;
 }
 Vector* lapl_u_shao(Particle* pi, Kernel kernel){
