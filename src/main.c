@@ -316,9 +316,9 @@ int dam_break(){
   // double h = 4*delta;
   double mass = rho_0*delta*delta;                // Masse d'une particule, constant
   double Rp = delta/2;                        // Rayon d'une particule
-  double eta = 0.25;                       // XSPH parameter from 0 to 1
+  double eta = 0.00;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
-  double tension = 7*1e-2;                     // Tension de surface de l'eau
+  double tension = 0.0;//7*1e-2;                     // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------

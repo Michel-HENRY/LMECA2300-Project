@@ -26,7 +26,7 @@ static double eval_Cubic_kernel(double R, double h) {
   double alpha = 40.0/(7.0*M_PI*h*h);
   double q = R/h;
   double eps = 1e-8;
-  if(q >= eps && q <= 1/2-eps) return alpha*(6*(pow(q,3) - pow(q,2)) + 1) ;
+  if(q >= eps && q <= 1/2-eps) return alpha*(6*(pow(q,3) - pow(q,2)) + 1);
   else if(q > 1/2-eps && q <= 1-eps) return alpha*(2*pow(1-q,3));
   else return 0;
 }
@@ -99,7 +99,7 @@ static double derivative_Lucy_kernel(double R, double h){
 	 return alpha*dW/h;
  }
 static double derivative_Quartic_kernel(double R, double h){
-  double alpha = 15.0/(7.0*M_PI*h*h);
+  double alpha = 60.0/(7.0*M_PI*h*h);
   double dW = 0;
   double eps = 1e-8;
   double q = 2*R/h;
