@@ -430,7 +430,6 @@ void density(Particle** p, int n_p, Kernel kernel){
 void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
 
   //FIXME !!!
-
   // Step 1 : mass conservation Drho/Dt = - rho div(u)
     // For each particle i :
       // Get div(u)
