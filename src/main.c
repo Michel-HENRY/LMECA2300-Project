@@ -297,8 +297,8 @@ int SPH_operator_validation(){
 }
 
 int dam_break(){
-  double lx = 0.114;                          // Longueur du domaine de particule
-  double ly = 0.228;                          // Hauteur du domaine de particle
+  double lx = 0.1;                          // Longueur du domaine de particule
+  double ly = 0.1;                          // Hauteur du domaine de particle
   int n_p_dim = 36;
 
   // Parameters
@@ -328,8 +328,8 @@ int dam_break(){
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
 
-  double L = 0.440;
-  double H = 0.440;
+  double L = 0.2;
+  double H = 0.2;
   int n_e = 4;
   double CF = 0.0;
   double CR = 1.0;
