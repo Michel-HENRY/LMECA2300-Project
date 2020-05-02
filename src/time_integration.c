@@ -92,7 +92,6 @@ void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H)
 
     double y = pi->fields->x->X[1];
     double Phydro = -y;
-
     pi->fields->P = (Pdyn) + Phydro;
   }
 }
