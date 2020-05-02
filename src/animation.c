@@ -57,7 +57,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
 	GLfloat(*data2)[2] = malloc(sizeof(data[0])*n_p*9);
 	animation->shadow = bov_points_new(data2, n_p*9, GL_DYNAMIC_DRAW);
-	bov_points_set_color(animation->shadow,(GLfloat[]){0.0, 0.0, 0.0, 0.72});
+	bov_points_set_color(animation->shadow,(GLfloat[]){0.0, 0.0, 0.0, 0.2});
 	bov_points_set_width(animation->shadow, 1e-10);
 
 	GLfloat(*data3)[8] = malloc(sizeof(data[0]));
@@ -312,9 +312,11 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			//bov_fast_triangle_fan_draw(window, animation->domain, 0, BOV_TILL_END);
 			if(nbr%5 == 3){
 				bov_particles_draw(window, animation->light, 0, BOV_TILL_END);
-				bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
 			}
 			bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
+			if(nbr%5 == 3){
+				bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
+			}
 			bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
 			bov_text_draw(window, animation->plot_none);
 			bov_text_draw(window, animation->plot_pressure);
