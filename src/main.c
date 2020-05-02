@@ -213,8 +213,8 @@ int SPH_operator_validation(){
     x = particles[i]->fields->x->X[0];
     y = particles[i]->fields->x->X[1];
     particles[i]->fields->P = y;
-    particles[i]->fields->u->X[0] = x*x;
-    particles[i]->fields->u->X[1] = y*y;
+    particles[i]->fields->u->X[0] = x;
+    particles[i]->fields->u->X[1] = 0;
   }
 
   // ------------------------------------------------------------------
@@ -251,7 +251,9 @@ int SPH_operator_validation(){
   // ------------------------------------------------------------------
 
   // // Temporal loop
+  // Kernel kernel = Quartic;
   Kernel kernel = Cubic;
+  // Kernel kernel = Lucy;
 
   update_cells(grid, particles, n_p);
   update_neighbors(grid, particles, n_p, 0);
@@ -269,16 +271,17 @@ int SPH_operator_validation(){
     // Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
     // Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
     // printf("----------------\n");
-    // // Vector_print(lapl_s);
+    // Vector_print(lapl_s);
     // Vector_print(lapl);
     // Vector_free(lapl);
     // Vector_free(lapl_s);
 
-    // double divergence = div_u(particles[i],kernel);
-    // printf("div = %f\n",divergence);
+    double divergence = div_u(particles[i],kernel);
+    printf("div = %f\n",divergence);
   }
+  // printf("h = %f\n",h);
 
-  show(particles,animation, (int) 1, true, false);
+  // show(particles,animation, (int) 1, true, false);
 
 
 
@@ -313,9 +316,9 @@ int dam_break(){
   // double h = 4*delta;
   double mass = rho_0*delta*delta;                // Masse d'une particule, constant
   double Rp = delta/2;                        // Rayon d'une particule
-  double eta = 0;                       // XSPH parameter from 0 to 1
+  double eta = 0.25;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
-  double tension = 0 ;//7*1e-2;                     // Tension de surface de l'eau
+  double tension = 7*1e-2;                     // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------
@@ -353,8 +356,8 @@ int dam_break(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 3e-1;
-  double dt = 1e-4;
+  double tEnd = 10;
+  double dt = 1e-5;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);

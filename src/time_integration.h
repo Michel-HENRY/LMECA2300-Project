@@ -33,6 +33,6 @@ static void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta);
 static void CSPM_density(Particle** p, int n_p, Kernel kernel);
 Vector* CSPM_pressure(Particle* pi, Kernel kernel);
 static Vector* get_Pi_ij(Particle* pi, double a, double b, Kernel kernel);
-static void KGC(Particle* pi, Kernel kernel, Vector* dW);
+static void KGC(Particle* pi, Vector* dW);
 
 #endif

@@ -15,6 +15,6 @@ Vector* grad_P(Particle* pi, Kernel kernel);
 Vector* grad_local(double fi, double fj, Vector* dWij, double mj, double rhoi,double rhoj);
 Vector* lapl_u(Particle* pi, Kernel kernel);
 Vector* lapl_u_shao(Particle* pi, Kernel kernel);
-Vector* lapl_local(Vector* fi, Vector* fj, Vector* xi, Vector* xj, Vector* dWij, double Vj);
+Vector* lapl_local(Vector* fi, Vector* fj, Vector* xi, Vector* xj, Vector* dWij, double Vj, double h);
 void kernel_validation();
 #endif

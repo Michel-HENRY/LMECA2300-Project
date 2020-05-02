@@ -70,7 +70,6 @@ Vector* lapl_u(Particle* pi, Kernel kernel){
   Vector* lapl = Vector_new(pi->fields->u->DIM);
 
   double h = pi->param->h;
-  double eta = 1e-5;
   Vector* fi = pi->fields->u;
   Vector* xi = pi->fields->x;
 
@@ -83,23 +82,22 @@ Vector* lapl_u(Particle* pi, Kernel kernel){
     Vector* xj = pj->fields->x;
 
     Vector* dW = grad_kernel(xi ,xj,h, kernel);
-    Vector* inner = lapl_local(fi,fj,xi,xj,dW, mj/rhoj);
+    Vector* inner = lapl_local(fi,fj,xi,xj,dW, mj/rhoj,h);
     sum_into(lapl,inner);
     Vector_free(dW);
     Vector_free(inner);
 
     node = node->next;
   }
-  times_into(lapl,2*(fi->DIM+2));
+  times_into(lapl,2*(fi->DIM + 2));
   return lapl;
 }
 
-Vector* lapl_local(Vector* fi, Vector* fj, Vector* xi, Vector* xj, Vector* dWij, double Vj){
+Vector* lapl_local(Vector* fi, Vector* fj, Vector* xi, Vector* xj, Vector* dWij, double Vj, double h){
   Vector* fi_fj = diff(fi,fj);
   Vector* rij = diff(xi,xj);
   double norm_r = norm(rij);
-  double eta = 1e-5;
-  Vector* res = times(dWij, Vj*dot(fi_fj, rij)/(norm_r*norm_r + eta*eta));
+  Vector* res = times(dWij, Vj*dot(fi_fj, rij)/(norm_r*norm_r + 0.01*h*h));
   Vector_free(fi_fj);
   Vector_free(rij);
   return res;

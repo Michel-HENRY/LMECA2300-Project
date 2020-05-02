@@ -91,7 +91,7 @@ void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H)
     double Pdyn = B*(pow(qrho,gamma) - 1);
 
     double y = pi->fields->x->X[1];
-    double Phydro = -rho*g*y;
+    double Phydro = rho*g*(H-y);
     pi->fields->P = (Pdyn) + Phydro;
   }
 }
@@ -175,7 +175,7 @@ static Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     times_into(grad_Pressure, -1);
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
-    Vector* laplacian_u = lapl_u(pi,kernel);
+    Vector* laplacian_u = lapl_u_shao(pi,kernel);
     // printf("Laplacian %i :\n", i);
     // Vector_print(laplacian_u);
     times_into(laplacian_u, viscosity);
@@ -254,7 +254,7 @@ static void CSPM_density(Particle** p, int n_p, Kernel kernel){
 
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
-    double num = 1e-8;
+    double num = 0;
     double den = 1e-8;
 
     ListNode *current = pi->neighbors->head;
@@ -284,8 +284,8 @@ Vector* CSPM_pressure(Particle* pi, Kernel kernel){
   double rhoi = pi->fields->rho;
   Vector* grad_Pressure = grad_P(pi,kernel);
 
-  double num_x = 1e-8;    double den_x = 1e-8;
-  double num_y = 1e-8;    double den_y = 1e-8;
+  double num_x = 0;    double den_x = 1e-8;
+  double num_y = 0;    double den_y = 1e-8;
   ListNode* current = pi->neighbors->head;
   if (current == NULL){
     printf("CSPM_density : No neighbors for particle!!!\n");
@@ -354,13 +354,14 @@ static Vector* get_Pi_ij(Particle* pi, double a, double b, Kernel kernel){
   return Pi_i;
 }
 
-static void KGC(Particle* pi, Kernel kernel, Vector* dW){
+static void KGC(Particle* pi, Vector* dW){
+  // DOES NOT WORK
   double h = pi->param->h;
   Vector* Xi = pi->fields->x;
   // Vector* dW_corr = Vector_new(Xi->DIM);
 
   double M11 = 0,M12 = 0,M22 = 0;
-  double eta = 1e-5;
+  double eta = 1e-2;
   ListNode* current = pi->neighbors->head;
   while (current != NULL) {
     Particle* pj = current->v;
@@ -368,13 +369,18 @@ static void KGC(Particle* pi, Kernel kernel, Vector* dW){
     double rhoj = pj->fields->rho;
     double xi_xj = Xi->X[0] - pj->fields->x->X[0];
     double yi_yj = Xi->X[1] - pj->fields->x->X[1];
-
+    if (current->next == NULL) break;
     M11 += (mj/rhoj)*dW->X[0]*xi_xj; //dW = dW/dr dr/dx
     M12 += (mj/rhoj)*dW->X[0]*yi_yj,
     M22 += (mj/rhoj)*dW->X[1]*yi_yj;
+    // printf("diff x = %f\t diff y = %f\n",xi_xj, yi_yj);
+    // printf("dWx = %f, dwy = %f\n",dW->X[0],dW->X[1]);
+    // printf("M = [%f,%f,%f]\n", M11,M12,M22);
     current = current->next;
   }
-  double detM = (M11*M22 - M12*M12)/(1+eta*eta);
+  double detM = (M11*M22 - M12*M12);
+  printf("detM = %f\n", detM);
+  printf("M11 = %f\n", M11);
   double L11 =  M22/detM;        double L12 = -M12/detM;
   double L21 = -M12/detM;        double L22 =  M11/detM;
 
@@ -525,7 +531,7 @@ void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* ed
       // The particle belongs to the free surface
       // Apply KGC
       for(int j = 0; j < n_n; j++){
-        KGC(pi,kernel,dWi[j]);
+        KGC(pi,dWi[j]);
       }
       // Evaluate curvature and external forces
       double ddCs = get_lapl_CsKGC(pi,kernel,dWi);
@@ -557,7 +563,7 @@ void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* ed
 
 
       Vector* dP_loc = grad_local(Pi,Pj, dWi[j],mj,rhoi,rhoj);
-      Vector* ddu_loc = lapl_local(ui,uj,xi,xj,dWi[j],mj/rhoj);
+      Vector* ddu_loc = lapl_local(ui,uj,xi,xj,dWi[j],mj/rhoj,h);
       // Vector_print(dWi[j]);
 
       sum_into(dP, dP_loc);

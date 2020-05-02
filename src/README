@@ -3,6 +3,7 @@ TODO :
   - Kernel Gradient Correction
   - Free Surface Validation
   - Calculation optimisation
+  - Higher Order Kernel
 
 
 Program Structure :
