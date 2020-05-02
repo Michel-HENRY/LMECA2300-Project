@@ -361,6 +361,7 @@ static void KGC(Particle* pi, Kernel kernel, Vector* dW){
   // Vector* dW_corr = Vector_new(Xi->DIM);
 
   double M11 = 0,M12 = 0,M22 = 0;
+  double eta = 1e-5;
   ListNode* current = pi->neighbors->head;
   while (current != NULL) {
     Particle* pj = current->v;
@@ -374,7 +375,7 @@ static void KGC(Particle* pi, Kernel kernel, Vector* dW){
     M22 += (mj/rhoj)*dW->X[1]*yi_yj;
     current = current->next;
   }
-  double detM = M11*M22 - M12*M12;
+  double detM = (M11*M22 - M12*M12)/(1+eta*eta);
   double L11 =  M22/detM;        double L12 = -M12/detM;
   double L21 = -M12/detM;        double L22 =  M11/detM;
 
@@ -428,6 +429,8 @@ void density(Particle** p, int n_p, Kernel kernel){
   }
 }
 void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
+
+  //FIXME !!!
 
   // Step 1 : mass conservation Drho/Dt = - rho div(u)
     // For each particle i :
@@ -557,6 +560,7 @@ void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* ed
 
       Vector* dP_loc = grad_local(Pi,Pj, dWi[j],mj,rhoi,rhoj);
       Vector* ddu_loc = lapl_local(ui,uj,xi,xj,dWi[j],mj/rhoj);
+      // Vector_print(dWi[j]);
 
       sum_into(dP, dP_loc);
       sum_into(ddu,ddu_loc);
@@ -598,7 +602,6 @@ void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* ed
   reflective_boundary(p,n_p, edges);
   print_rhoMax(p,n_p);
   print_rhoMin(p,n_p);
-
 }
 
 void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta){

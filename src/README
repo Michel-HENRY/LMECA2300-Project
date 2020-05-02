@@ -1,0 +1,45 @@
+TODO :
+
+  - Kernel Gradient Correction
+  - Free Surface Validation
+  - Calculation optimisation
+
+
+Program Structure :
+
+    - main.c : sets the testcases. In order to keep the code lisible, some useful function has been written such as fluidProblem() and box().
+               Once all the structure are created, the time integration scheme can begin. Its structure is the following.
+
+              1. Update cells
+              2. Update neighbors
+              3. Compute pressure according a state equation
+              4. Time integration
+              5. Update the animation
+              6.  If t < tEnd : go to 1.
+
+    - time_integration.c : provides all the useful functions to compute the time integration and the calculation of the pressure field.
+                           The time integration follows the scheme :
+
+                           1. Update density
+                              1a. Density correction based on CSPM
+                           2. Update velocity
+                              2a. if requires the pressure gradient is corrected using CSPM.
+                              2b. XSPH is also available by the set of parameter eta, set to 0 for nos effect and to 0.5 for commun value.
+                           3. Update position
+                           4. Boundary conditions
+
+    - particle.c : this code describes the structure of a particle in this framework. It also provides all the necessary functions to compute
+                   the particle neighbords.
+                   One particle has the structure :
+
+                   Particle -> Fields -> (x,u,f,P,Cs,rho)
+                               Parameters -> (mass, dynamic_viscosity,h,Rp,tension, treshold, P0, g)
+                               Cell -> (i,j,neighboring_cells, particles, visited)
+                               Neighbors -> a list of particles
+
+                  Fields -> x   : Vector position
+                            u   : Vector velocity
+                            f   : Vector External forces
+                            P   : float pressure
+                            Cs  : float color field
+                            rho : float density
