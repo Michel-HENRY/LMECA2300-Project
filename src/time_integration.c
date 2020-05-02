@@ -91,7 +91,7 @@ void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H)
     double Pdyn = B*(pow(qrho,gamma) - 1);
 
     double y = pi->fields->x->X[1];
-    double Phydro = rho*g*(H - y);
+    double Phydro = -y;
 
     pi->fields->P = (Pdyn) + Phydro;
   }
@@ -252,19 +252,25 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
 
 static void CSPM_density(Particle** p, int n_p, Kernel kernel){
   double* rho_CSPM = (double*) malloc(sizeof(double)*n_p);
-  for(int i =0; i < n_p; i++){
+
+  for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     double num = 1e-8;
     double den = 1e-8;
 
     ListNode *current = pi->neighbors->head;
+    if(current == NULL){
+      printf("CSPM_density : No neighbors for particle %d!!!\n", i);
+      rho_CSPM[i] = pi->fields->rho;
+      break;
+    }
     while(current != NULL){
       Particle* pj = current->v;
       double mj = pj->param->mass;
-      double Vj = mj/pj->fields->rho;
+      double rhoj = pj->fields->rho;
       double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);
       num += mj*W;
-      den += W*Vj;
+      den += W*mj/rhoj;
       current = current->next;
     }
     rho_CSPM[i] = num/den;
@@ -279,26 +285,30 @@ Vector* CSPM_pressure(Particle* pi, Kernel kernel){
   double rhoi = pi->fields->rho;
   Vector* grad_Pressure = grad_P(pi,kernel);
 
-    double num_x = 1e-8;    double den_x = 1e-8;
-    double num_y = 1e-8;    double den_y = 1e-8;
-    ListNode* current = pi->neighbors->head;
-    while(current != NULL){
-      Particle* pj = current->v;
-      double Vj = pj->param->mass/pj->fields->rho;
-      Vector* dW = grad_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);
-      double xjxi = pj->fields->x->X[0] - pi->fields->x->X[0];
-      double yjyi = pj->fields->x->X[1] - pi->fields->x->X[1];
-      den_x += Vj * dW->X[0] * xjxi;
-      den_y += Vj * dW->X[1] * yjyi;
+  double num_x = 1e-8;    double den_x = 1e-8;
+  double num_y = 1e-8;    double den_y = 1e-8;
+  ListNode* current = pi->neighbors->head;
+  if (current == NULL){
+    printf("CSPM_density : No neighbors for particle!!!\n");
+    return grad_Pressure;
+  }
+  while(current != NULL){
+    Particle* pj = current->v;
+    double Vj = pj->param->mass/pj->fields->rho;
+    Vector* dW = grad_kernel(pi->fields->x, pj->fields->x, pi->param->h, kernel);
+    double xjxi = pj->fields->x->X[0] - pi->fields->x->X[0];
+    double yjyi = pj->fields->x->X[1] - pi->fields->x->X[1];
+    den_x += Vj * dW->X[0] * xjxi;
+    den_y += Vj * dW->X[1] * yjyi;
 
-      Vector_free(dW);
-      current = current->next;
-    }
-    num_x = grad_Pressure->X[0];
-    num_y = grad_Pressure->X[1];
+    Vector_free(dW);
+    current = current->next;
+  }
+  num_x = grad_Pressure->X[0];
+  num_y = grad_Pressure->X[1];
 
-    grad_Pressure->X[0] = num_x/den_x;
-    grad_Pressure->X[1] = num_y/den_y;
+  grad_Pressure->X[0] = num_x/den_x;
+  grad_Pressure->X[1] = num_y/den_y;
 
   return grad_Pressure;
 }
@@ -345,6 +355,36 @@ static Vector* get_Pi_ij(Particle* pi, double a, double b, Kernel kernel){
   return Pi_i;
 }
 
+static void KGC(Particle* pi, Kernel kernel, Vector* dW){
+  double h = pi->param->h;
+  Vector* Xi = pi->fields->x;
+  // Vector* dW_corr = Vector_new(Xi->DIM);
+
+  double M11 = 0,M12 = 0,M22 = 0;
+  ListNode* current = pi->neighbors->head;
+  while (current != NULL) {
+    Particle* pj = current->v;
+    double mj = pj->param->mass;
+    double rhoj = pj->fields->rho;
+    double xi_xj = Xi->X[0] - pj->fields->x->X[0];
+    double yi_yj = Xi->X[1] - pj->fields->x->X[1];
+
+    M11 += (mj/rhoj)*dW->X[0]*xi_xj; //dW = dW/dr dr/dx
+    M12 += (mj/rhoj)*dW->X[0]*yi_yj,
+    M22 += (mj/rhoj)*dW->X[1]*yi_yj;
+    current = current->next;
+  }
+  double detM = M11*M22 - M12*M12;
+  double L11 =  M22/detM;        double L12 = -M12/detM;
+  double L21 = -M12/detM;        double L22 =  M11/detM;
+
+  double dWx = L11*dW->X[0] + L12*dW->X[1];
+  double dWy = L21*dW->X[0] + L22*dW->X[1];
+
+  dW->X[0] = dWx;
+  dW->X[1] = dWy;
+}
+
 
 // ------------------------------------------------------------------
 // ------------------- Solve the material derivatives ---------------
@@ -388,23 +428,177 @@ void density(Particle** p, int n_p, Kernel kernel){
   }
 }
 void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
-  Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
-  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
-  time_integration_mass(p,n_p,rhs_mass,dt);
 
-  time_integration_momentum(p,n_p,rhs_momentum,dt);
-
-  time_integration_position(p,n_p,dt);
-  reflective_boundary(p, n_p, edges);
-
-  print_rhoMax(p,n_p);
-  print_rhoMin(p,n_p);
-
+  // Step 1 : mass conservation Drho/Dt = - rho div(u)
+    // For each particle i :
+      // Get div(u)
+      // rhs_mass[i] = - rho_i * div(u)
+    // For each particle i :
+      // rho_i = rhs_mass[i]*dt
+  double* rhs_mass = (double*) malloc(sizeof(double)*n_p);
   for(int i = 0; i < n_p; i++){
+    Particle* pi = p[i];
+    double rhoi = pi->fields->rho;
+    double div_ui = div_u(pi,kernel);
+    rhs_mass[i] = -rhoi*div_ui;
+  }
+  for(int i = 0; i < n_p; i++){
+    Particle* pi = p[i];
+    pi->fields->rho += dt*rhs_mass[i];
+  }
+  CSPM_density(p, n_p, kernel);
+  free(rhs_mass);
+  // printf("DENSITY UPDATED\n");
+  // u_i += rhs_momentum[i]*dt/rho_i
+  Vector** rhs_momentum = (Vector**) malloc(sizeof(Vector*) * n_p);
+  for(int i = 0; i < n_p; i++){
+    Particle* pi = p[i];
+    Vector* xi = pi->fields->x;
+    double h = pi->param->h;
+    rhs_momentum[i] = Vector_new(xi->DIM);
+
+    // Compute Cs = Vj*Wij
+    ListNode* current = pi->neighbors->head;
+    double Cs = 0;
+    while(current != NULL){
+      Particle* pj = current->v;
+      Vector* xj = pj->fields->x;
+      double Wij = eval_kernel(xi,xj,h,kernel);
+      double rhoj = pj->fields->rho;
+      double mj = pj->param->mass;
+      double Vj  = mj/rhoj;
+      Cs += Vj*Wij;
+      current = current->next;
+    }
+    pi->fields->Cs = Cs;
+  }
+  // printf("COLOR SHAPE UPDATED\n");
+
+  for(int i = 0; i < n_p ; i++){
+    // FORCES
+    Vector* F_pressure = NULL;
+    Vector* F_viscosity = NULL;
+    Vector* F_freeSurface = NULL;
+    Vector* F_ext = Vector_new(p[i]->fields->x->DIM);
+    F_ext->X[1] = -p[i]->param->g;
+    // Vector* F_artViscosity = NULL;
+
+
+    // Compute dWi
+    Particle* pi = p[i];
+    double rhoi = pi->fields->rho;
+    Vector* xi = pi->fields->x;
+    double h = pi->param->h;
+
+    int n_n = get_n_neighbors(pi);
+    Vector**dWi = (Vector**) malloc(sizeof(Vector*)*n_n); // We need to store it since we will modify it to restore consistency by KGC
+    ListNode* current = pi->neighbors->head;
+    for(int j = 0; j < n_n; j++){
+      Particle* pj = current->v;
+      Vector* xj = pj->fields->x;
+      dWi[j] = grad_kernel(xi,xj,h,kernel);
+      current = current->next;
+    }
+    // printf("dW(%d) computed\n",i);
+    // ---------------------------- SURFACE TENSION + KGC ----------------------------------------------------------------
+    // Compute dCs = mj(Csi/rhoi^2 + Csj/rhoj^2) * dWij
+    current = pi->neighbors->head;
+    Vector* dCs = Vector_new(xi->DIM);
+    double Csi = pi->fields->Cs;
+    for(int j = 0; j <n_n; j++){
+      Particle* pj = current->v;
+      Vector* x2 = pj->fields->x;
+      double rhoj = pj->fields->rho;
+      double mj = pj->param->mass;
+      double Csj = pj->fields->Cs;
+
+      Vector* inner = grad_local(Csi,Csj,dWi[j],mj,rhoi,rhoj);
+      sum_into(dCs,inner);
+
+      current = current->next;
+    }
+    times_into(dCs, rhoi);
+    double norm_dCs = norm(dCs);
+    Vector* n = times(dCs, 1/norm_dCs);
+    if(norm_dCs > pi->param->treshold){
+      // The particle belongs to the free surface
+      // Apply KGC
+      for(int j = 0; j < n_n; j++){
+        KGC(pi,kernel,dWi[j]);
+      }
+      // Evaluate curvature and external forces
+      double ddCs = get_lapl_CsKGC(pi,kernel,dWi);
+      double tension = pi->param->tension;
+      F_freeSurface = times(n,-tension*ddCs);
+    }
+    else {
+      F_freeSurface = Vector_new(dCs->DIM);
+    }
+    Vector_free(n);
+    Vector_free(dCs);
+    // printf("Surface force Computed %d\n",i);
+    // Vector_print(F_freeSurface);
+    // --------------------------------- PRESSURE + VISCOSITY ------------------------------------------------------------
+    current = pi->neighbors->head;
+    Vector* dP = Vector_new(xi->DIM);
+    Vector* ddu = Vector_new(xi->DIM);
+
+    double Pi = pi->fields->P;
+    Vector* ui = pi->fields->u;
+    int j = 0;
+    while (current != NULL) {
+      Particle* pj = current->v;
+      double Pj = pj->fields->P;
+      double rhoj = pj->fields->rho;
+      double mj = pj->param->mass;
+      Vector* uj = pj->fields->u;
+      Vector* xj = pj->fields->x;
+
+
+      Vector* dP_loc = grad_local(Pi,Pj, dWi[j],mj,rhoi,rhoj);
+      Vector* ddu_loc = lapl_local(ui,uj,xi,xj,dWi[j],mj/rhoj);
+
+      sum_into(dP, dP_loc);
+      sum_into(ddu,ddu_loc);
+
+
+      current = current->next;
+      j++;
+    }
+    times_into(dP,rhoi); //ADD CSPM PRESSURE
+    times_into(ddu, 2*(ddu->DIM+2));
+    F_pressure = times(dP,-1/rhoi);
+    F_viscosity = times(ddu, pi->param->dynamic_viscosity/rhoi);
+    // Vector_print(F_pressure);
+    // Vector_print(F_viscosity);
+    // Vector_print(F_freeSurface);
+    // Vector_print(F_ext);
+    for(int d=0; d<xi->DIM; d++){
+      rhs_momentum[i]->X[d] = F_pressure->X[d] + F_viscosity->X[d] + F_freeSurface->X[d] + F_ext->X[d];
+    }
+    // printf("RHS MOMENTUM COMPUTED\n");
+  }
+
+
+  // Update velocity
+  for(int i = 0; i < n_p; i++){
+    for(int d=0; d < p[i]->fields->x->DIM ; d++){
+      p[i]->fields->u->X[d] += rhs_momentum[i]->X[d]*dt;
+    }
     Vector_free(rhs_momentum[i]);
   }
   free(rhs_momentum);
-  free(rhs_mass);
+
+  // Update position
+  for(int i = 0; i < n_p ; i++){
+    for(int d = 0; d < p[i]->fields->x->DIM ; d++){
+      p[i]->fields->x->X[d] = p[i]->fields->u->X[d]*dt;
+    }
+  }
+  reflective_boundary(p,n_p, edges);
+  print_rhoMax(p,n_p);
+  print_rhoMin(p,n_p);
+
 }
 
 void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta){

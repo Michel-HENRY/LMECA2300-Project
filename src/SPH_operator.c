@@ -16,15 +16,19 @@ double div_u(Particle* pi, Kernel kernel){
     Vector* xj = pj->fields->x;
 
     Vector* dW = grad_kernel(xi,xj,h,kernel);
-    Vector* fj_fi = diff(fj,fi);
+    divergence += div_local(fi,fj,dW,mj);
 
-    divergence += dot(fj_fi,dW)*mj;
-
-    Vector_free(fj_fi);
     Vector_free(dW);
     node = node->next;
   }
   return divergence/rho_i;
+}
+
+double div_local(Vector* fi, Vector* fj, Vector* dWij, double mj){
+  Vector* fj_fi = diff(fj,fi);
+  double res = mj*dot(fj_fi,dWij);
+  Vector_free(fj_fi);
+  return res;
 }
 
 Vector* grad_P(Particle* pi, Kernel kernel){
@@ -45,8 +49,7 @@ Vector* grad_P(Particle* pi, Kernel kernel){
     Vector* xj = pj->fields->x;
 
     Vector* dW = grad_kernel(xi ,xj,h, kernel);
-    double a = fi/(rho_i*rho_i) + fj/(rho_j*rho_j);
-    Vector* inner = times(dW,a*mj);
+    Vector* inner = grad_local(fi,fj,dW, mj, rho_i,rho_j);
     sum_into(grad, inner);
 
     Vector_free(inner);
@@ -56,6 +59,10 @@ Vector* grad_P(Particle* pi, Kernel kernel){
   }
   times_into(grad, rho_i);
   return grad;
+}
+Vector* grad_local(double fi, double fj, Vector* dWij, double mj, double rhoi,double rhoj){
+  Vector* res = times(dWij, mj * (fi/(rhoi*rhoi) + fj/(rhoj*rhoj)) );
+  return res;
 }
 
 
@@ -76,25 +83,26 @@ Vector* lapl_u(Particle* pi, Kernel kernel){
     Vector* xj = pj->fields->x;
 
     Vector* dW = grad_kernel(xi ,xj,h, kernel);
-    Vector* fi_fj = diff(fi,fj);
-    Vector* xi_xj = diff(xi,xj);
-    double dist_xixj = dist(xi,xj);
-    // double coeff = mj/rhoj * dot(xi_xj, dW)/(dist_xixj*dist_xixj + eta*eta);
-    double coeff = mj/rhoj * dot(xi_xj, fi_fj)/(dist_xixj*dist_xixj + eta*eta);
-    // Vector* inner = times(fi_fj,coeff);
-    Vector* inner = times(dW, coeff);
-
+    Vector* inner = lapl_local(fi,fj,xi,xj,dW, mj/rhoj);
     sum_into(lapl,inner);
-
     Vector_free(dW);
-    Vector_free(fi_fj);
-    Vector_free(xi_xj);
     Vector_free(inner);
 
     node = node->next;
   }
   times_into(lapl,2*(fi->DIM+2));
   return lapl;
+}
+
+Vector* lapl_local(Vector* fi, Vector* fj, Vector* xi, Vector* xj, Vector* dWij, double Vj){
+  Vector* fi_fj = diff(fi,fj);
+  Vector* rij = diff(xi,xj);
+  double norm_r = norm(rij);
+  double eta = 1e-5;
+  Vector* res = times(dWij, Vj*dot(fi_fj, rij)/(norm_r*norm_r + eta*eta));
+  Vector_free(fi_fj);
+  Vector_free(rij);
+  return res;
 }
 Vector* lapl_u_shao(Particle* pi, Kernel kernel){
   Vector* lapl = Vector_new(pi->fields->u->DIM);

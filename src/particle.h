@@ -62,6 +62,7 @@ struct Grid {
 	double bottom;	// y-coordinate of bottom side
 };
 void Particle_validation();
+void display_neighbors(Particle** particles, int n_p);
 // -------------------------------------------------------------------
 // --------------------------- Grid + Cell ---------------------------
 // -------------------------------------------------------------------
@@ -91,5 +92,6 @@ Particle* Particle_new(Parameters* param, Fields* fields);
 void Particle_free(Particle* particle);
 void Particles_free(Particle** particles, int n_p);
 static void reset_particles(Particle** particles, int N, int iter);
+int get_n_neighbors(Particle* p);
 
 #endif

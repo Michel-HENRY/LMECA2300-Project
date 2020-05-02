@@ -42,11 +42,12 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
   animation->domain = load_Domain(domain);
   bov_points_set_pos(animation->domain, (GLfloat[2]){-0.2,-0.2});
-  bov_points_set_width(animation->domain, 0.0005);
+  bov_points_set_width(animation->domain, 0.001);
   bov_points_set_color(animation->domain,(GLfloat[]){1.0, 0.0, 0.0, 1.0});
 
   if (grid != NULL){
     animation->grid = load_Grid(grid);
+    bov_points_set_pos(animation->grid, (GLfloat[2]){-0.2,-0.2});
   }
 	else{
     animation->grid = NULL;

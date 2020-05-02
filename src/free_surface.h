@@ -8,7 +8,8 @@
 // ADD Cs in particle
 Vector** get_force_surface(Particle** p, int n_p, Kernel kernel);
 static double get_curvature(Particle* p, double norm_n, Kernel kernel);
-static double get_lapl_Cs(Particle*p, Kernel kernel);
+double get_lapl_Cs(Particle*p, Kernel kernel);
+double get_lapl_CsKGC(Particle*p, Kernel kernel, Vector** dWi);
 static Vector* get_n(Particle*p, Kernel kernel);
 static double get_smooth_Cs(Particle* p, Kernel kernel);
 

@@ -8,6 +8,8 @@
 #include <time.h> // To generate random number
 #include <stdlib.h>
 
+
+
 // Validation function
 static int dam_break();
 static int boundary_validation();
@@ -306,12 +308,12 @@ int dam_break(){
   int n_p_dim_x = n_p_dim;                // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*(ly/lx);
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
-  double h = lx/n_p_dim_x;                // step between neighboring particles
-  double kh = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
-  // double kh = 4*h;
-  double mass = rho_0*h*h;                // Masse d'une particule, constant
-  double Rp = h/2;                        // Rayon d'une particule
-  double eta = 0.0;                       // XSPH parameter from 0 to 1
+  double delta = lx/n_p_dim_x;                // step between neighboring particles
+  double h = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
+  // double h = 4*delta;
+  double mass = rho_0*delta*delta;                // Masse d'une particule, constant
+  double Rp = delta/2;                        // Rayon d'une particule
+  double eta = 0;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
   double tension = 0 ;//7*1e-2;                     // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
@@ -319,7 +321,7 @@ int dam_break(){
   // ------------------------------------------------------------------
   // ------------------------ SET Particles ---------------------------
   // ------------------------------------------------------------------
-  Parameters* param = Parameters_new(mass, dynamic_viscosity, kh, Rp, tension, treshold,P0,g);
+  Parameters* param = Parameters_new(mass, dynamic_viscosity, h, Rp, tension, treshold,P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
 
   // ------------------------------------------------------------------
@@ -337,9 +339,9 @@ int dam_break(){
   // ------------------------------------------------------------------
   // ------------------------ SET Grid --------------------------------
   // ------------------------------------------------------------------
-  double extra = 0.0;
-  extra = 0.05;
-  Grid* grid = Grid_new(0-extra, L+extra, 0-extra, H+extra, kh);
+  double extra = 0;
+  extra = 0.01;
+  Grid* grid = Grid_new(0-extra, L+extra, 0-extra, H+extra, h);
 
   // ------------------------------------------------------------------
   // ------------------------ SET Animation ---------------------------
@@ -351,8 +353,8 @@ int dam_break(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 1;
-  double dt = 1e-5;
+  double tEnd = 3e-1;
+  double dt = 1e-4;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
@@ -361,22 +363,19 @@ int dam_break(){
   int i = 0;
   while (t < tEnd){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
-    if (i%output == 0)
-      show(particles, animation, i, false, false);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
     update_pressureDam(particles, n_p, rho_0, g, H);
-    // update_pressure(particles, n_p, rho_0, g, H);
-    // update_pressureMod(particles, n_p, rho_0);
-    // Tait(particles, n_p, rho_0);
-    // time_integration(particles, n_p, kernel, dt, edges);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
+    // time_integration(particles,n_p,kernel,dt,edges);
+    show(particles, animation, i, false, false);
+
     printf("Time integration completed\n");
 
     i++;
     t += dt;
   }
-  show(particles,animation, iter_max, true, false);
+  show(particles,animation, iter_max, true, true);
 
 
 

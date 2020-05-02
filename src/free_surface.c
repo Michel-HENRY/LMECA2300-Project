@@ -38,7 +38,7 @@ static double get_curvature(Particle* p, double norm_n, Kernel kernel){
 
 
 
-static double get_lapl_Cs(Particle*pi, Kernel kernel){
+double get_lapl_Cs(Particle*pi, Kernel kernel){
   double lapl = 0;
 
   double h = pi->param->h;
@@ -55,13 +55,41 @@ static double get_lapl_Cs(Particle*pi, Kernel kernel){
     Vector* dW = grad_kernel(xi ,xj,h, kernel);
     Vector* xi_xj = diff(xi,xj);
     double dist_xixj = dist(xi,xj); // => Distance nulle
-
-    double res = Vj*(fi-fj)*dot(xi_xj,dW)/(dist_xixj*dist_xixj);
+    double eta = 1e-5;
+    double res = Vj*(fi-fj)*dot(xi_xj,dW)/(dist_xixj*dist_xixj + eta*eta);
 
     lapl += res;
     Vector_free(dW);
     Vector_free(xi_xj);
 
+    node = node->next;
+  }
+  return 2*lapl;
+}
+double get_lapl_CsKGC(Particle*pi, Kernel kernel, Vector** dWi){
+  double lapl = 0;
+
+  double h = pi->param->h;
+  double fi = pi->fields->Cs;
+  Vector* xi = pi->fields->x;
+
+  ListNode* node = pi->neighbors->head;
+  int j = 0;
+  while(node != NULL){
+    Particle* pj = node->v;
+    double Vj = pj->param->mass/pj->fields->rho;
+    double fj = pj->fields->Cs;
+    Vector* xj = pj->fields->x;
+
+    Vector* dW = dWi[j];
+    Vector* xi_xj = diff(xi,xj);
+    double dist_xixj = dist(xi,xj); // => Distance nulle
+    double eta = 1e-5;
+    double res = Vj*(fi-fj)*dot(xi_xj,dW)/(dist_xixj*dist_xixj + eta*eta);
+
+    lapl += res;
+    Vector_free(xi_xj);
+    j++;
     node = node->next;
   }
   return 2*lapl;

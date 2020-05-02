@@ -1,5 +1,22 @@
 #include "particle.h"
 
+
+void display_neighbors(Particle** particles, int n_p){
+  for(int i = 0; i < n_p; i++){
+    Particle* p0 = particles[i];
+    ListNode* current = p0->neighbors->head;
+    int counter = 0;
+    while(current != NULL){
+      counter++;
+      current = current->next;
+    }
+    printf("I have %d neighbors\n", counter);
+    if(counter == 0){
+      printf("ERROR : NO NEIGHBORS\n");
+      EXIT_SUCCESS;
+    }
+  }
+}
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -94,7 +111,7 @@ static void add_neighbors_from_cell(Particle* p, Cell* cell , double h){
 	while (node != NULL) {
 		Particle* q = (Particle*)node->v;
     double dist_pq = dist(p->fields->x,q->fields->x);
-		if(dist_pq <= h && !equal(p->fields->x,q->fields->x)){
+		if(dist_pq <= h){
       List_append(p->neighbors, q);
     }
 		node = node->next;
@@ -214,4 +231,13 @@ static void reset_particles(Particle** particles, int N, int iter){
 		List_free(p->neighbors, NULL);
 		p->neighbors = List_new();
 	}
+}
+int get_n_neighbors(Particle* p){
+  int n = 0;
+  ListNode* current = p->neighbors->head;
+  while(current != NULL){
+    current = current->next;
+    n++;
+  }
+  return n;
 }
