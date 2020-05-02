@@ -21,9 +21,9 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  // dam_break();
+  dam_break();
   // boundary_validation();
-  SPH_operator_validation();
+  // SPH_operator_validation();
   // free_surface_validation();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
@@ -370,7 +370,6 @@ int dam_break(){
     update_neighbors(grid, particles, n_p, i);
     update_pressureDam(particles, n_p, rho_0, g, H);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
-    // time_integration(particles,n_p,kernel,dt,edges);
     show(particles, animation, i, false, false);
 
     printf("Time integration completed\n");

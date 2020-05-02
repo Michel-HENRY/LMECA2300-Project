@@ -92,6 +92,7 @@ void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H)
 
     double y = pi->fields->x->X[1];
     double Phydro = rho*g*(H-y);
+    Phydro = - rho*g*y;
     pi->fields->P = (Pdyn) + Phydro;
   }
 }
@@ -218,7 +219,7 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
     times_into(forces, 1/rho);                // Dv/Dt = ... + F/rho
 
     // Artificial viscosity
-    double a = 0.3;
+    double a = 0.2; //0.3 is also a good value
     double b = 0;
     Vector* pij = get_Pi_ij(pi,a,b,kernel);
     times_into(pij, -1);
@@ -615,6 +616,8 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
   CSPM_density(p,n_p, kernel);
 
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);
+  // HERE IMPOSE BOUNDARY CONDITIONS
+  // IF WALL RHS = 0, P = UPDATE_PRESSURE
   time_integration_momentum(p,n_p,rhs_momentum,dt);
 
   XSPH_correction(p, n_p, kernel, eta);
