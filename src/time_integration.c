@@ -211,7 +211,7 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
     Vector* laplacian_u = lapl_u_shao(pi,kernel);
     times_into(laplacian_u, nu);
 
-    // Surfaces forces
+    // External forces
     Vector* forces = pi->fields->f;
     forces->X[1] = -pi->param->g*rho;         // Add gravity
     sum_into(forces, force_surface[i]);    // Add surface tension
@@ -361,7 +361,7 @@ static void KGC(Particle* pi, Vector* dW){
   // Vector* dW_corr = Vector_new(Xi->DIM);
 
   double M11 = 0,M12 = 0,M22 = 0;
-  double eta = 1e-2;
+  double eta = 1e-5;
   ListNode* current = pi->neighbors->head;
   while (current != NULL) {
     Particle* pj = current->v;
@@ -612,7 +612,6 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
 
   double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
   time_integration_mass(p,n_p,rhs_mass,dt);
-  // density(p,n_p,kernel);
   CSPM_density(p,n_p, kernel);
 
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);

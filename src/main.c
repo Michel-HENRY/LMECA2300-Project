@@ -21,9 +21,9 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  dam_break();
+  // dam_break();
   // boundary_validation();
-  // SPH_operator_validation();
+  SPH_operator_validation();
   // free_surface_validation();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
@@ -213,7 +213,7 @@ int SPH_operator_validation(){
     x = particles[i]->fields->x->X[0];
     y = particles[i]->fields->x->X[1];
     particles[i]->fields->P = y;
-    particles[i]->fields->u->X[0] = x;
+    particles[i]->fields->u->X[0] = x*x + y*y;
     particles[i]->fields->u->X[1] = 0;
   }
 
@@ -251,8 +251,8 @@ int SPH_operator_validation(){
   // ------------------------------------------------------------------
 
   // // Temporal loop
-  // Kernel kernel = Quartic;
-  Kernel kernel = Cubic;
+  Kernel kernel = Quartic;
+  // Kernel kernel = Cubic;
   // Kernel kernel = Lucy;
 
   update_cells(grid, particles, n_p);
@@ -263,21 +263,21 @@ int SPH_operator_validation(){
   double min = 0;
   for(int i = 0; i < n_p ; i++){
     // Vector* gradP = grad_P(particles[i], kernel);         //Pas précis
-    Vector* gradP = CSPM_pressure(particles[i], kernel);  //Ordre 1 sur les noeuds intérieurs
-    Vector_print(gradP);
-    Vector_free(gradP);
+    // Vector* gradP = CSPM_pressure(particles[i], kernel);  //Ordre 1 sur les noeuds intérieurs
+    // Vector_print(gradP);
+    // Vector_free(gradP);
 
 
-    // Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
-    // Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
-    // printf("----------------\n");
-    // Vector_print(lapl_s);
-    // Vector_print(lapl);
-    // Vector_free(lapl);
-    // Vector_free(lapl_s);
+    Vector* lapl_s = lapl_u_shao(particles[i],kernel);      //Pas tres precis : Ordre 0
+    Vector* lapl = lapl_u(particles[i], kernel);            //Pareil que shao : Ordre 0
+    printf("----------------\n");
+    Vector_print(lapl_s);
+    Vector_print(lapl);
+    Vector_free(lapl);
+    Vector_free(lapl_s);
 
-    double divergence = div_u(particles[i],kernel);
-    printf("div = %f\n",divergence);
+    // double divergence = div_u(particles[i],kernel);
+    // printf("div = %f\n",divergence);
   }
   // printf("h = %f\n",h);
 
