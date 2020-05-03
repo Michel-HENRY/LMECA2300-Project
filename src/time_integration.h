@@ -9,7 +9,6 @@
 #include "free_surface.h"
 
 
-void time_integration(Particle** p, int n_p,Kernel kernel, double dt, Edges* edges);
 void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta);
 void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta);
 void time_integration_mass(Particle** p, int n_p,double* rhs_mass,double dt);
@@ -18,10 +17,9 @@ void time_integration_momentum(Particle** p, int n_p, Vector** rhs_momentum,doub
 void time_integration_position(Particle** p, int n_p, double dt);
 
 void update_pressureMod(Particle** p, int n_p, double rho_0);
-void update_pressure(Particle** p, int n_p, double rho_0, double g, double H);
-void update_pressureDam(Particle** p, int n_p, double rho_0, double g, double H);
 void update_pressureEq(Particle** p, int n_p);
-void Tait(Particle** p, int n_p, double rho_0);
+void imposeFScondition(Particle** particles,int n_p_dim_x,int n_p_dim_y);
+void update_pressureHydro(Particle** particles, int n_p_dim_x, int n_p_dim_y, double rho_0);
 
 
 static double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel);

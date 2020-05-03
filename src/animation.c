@@ -175,7 +175,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
     bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
     bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
-    if (iter%1000 == 0) {
+    if (iter%100 == 0) {
       bov_window_screenshot(window, screenshot_name);
     }
     bov_window_update(window);

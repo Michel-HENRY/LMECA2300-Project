@@ -33,9 +33,9 @@ int main(){
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
   int n_p = n_p_dim_x*n_p_dim_y;
   Particle** particles = (Particle**) malloc(n_p*sizeof(Particle*));
-  for(int i = 0; i < n_p_dim_x; i++){
-      for(int j = 0; j < n_p_dim_y; j++){
-        int index = i*n_p_dim_y + j;
+  for(int j = 0; j< n_p_dim_y; j++){
+      for(int i = 0; i < n_p_dim_x; i++){
+        int index = j*n_p_dim_x + i;
 
         Vector* x = Vector_new(2);
         Vector* u = Vector_new(2);
@@ -372,12 +372,12 @@ static int dam_break(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressureDam(particles, n_p, rho_0, g, ly);
+    update_pressureHydro(particles, n_p_dim_x, n_p_dim_y, rho_0);
+    imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     show(particles, animation, i, false, false);
 
     printf("Time integration completed\n");
-
     i++;
     t += dt;
   }
@@ -496,9 +496,9 @@ static int hydrostatic_eq(){
 
 static int waves(){
 
-  double lx = 1;                          // Longueur du domaine de particule
+  double lx = 2;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 75;
+  int n_p_dim = 100;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
@@ -511,7 +511,7 @@ static int waves(){
   double h = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
   double mass = rho_0*delta*delta;                // Masse d'une particule, constant
   double Rp = delta/2;                        // Rayon d'une particule
-  double eta = 0.50;                       // XSPH parameter from 0 to 1
+  double eta = 0.00;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
   double tension = 0.0;//7*1e-2;                     // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
@@ -522,14 +522,16 @@ static int waves(){
   Parameters* param = Parameters_new(mass, dynamic_viscosity, h, Rp, tension, treshold,P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
   // Apply perturbation
-  double w = 10*M_PI*lx;
-  double eps = lx/50;
-  for(int i = 0; i < n_p_dim_x; i++){
-    for(int j = 0; j < n_p_dim_y; j ++){
+  double w = 10*M_PI*lx;                        // Pulsation de la perturbation si périodique
+  double eps = lx/15;                           // Amplitude de la perturbation
+  double sigma = 0.025;                          // Ecart-type de la perturbation
+  for(int j = 0; j < n_p_dim_y; j++){
+    for(int i = 0; i < n_p_dim_x; i++){
       // y -= y/ly * eps*cos(wx)
-      int index = i*n_p_dim_y + j;
+      int index = j*n_p_dim_x + i;
       Vector* x = particles[index]->fields->x;
-      x->X[1] -= (x->X[1]/ly) * eps * sin(w*x->X[0]);
+      x->X[1] += (x->X[1]/ly) * eps * exp(-pow(x->X[0]-lx/2,2)/sigma);
+      // cos(w*x->X[0])
     }
   }
 
@@ -537,7 +539,7 @@ static int waves(){
   // ------------------------ SET Edges -------------------------------
   // ------------------------------------------------------------------
 
-  double L = 1;
+  double L = 2;
   double H = 1.5;
   int n_e = 4;
   double CF = 0.0;
@@ -574,8 +576,8 @@ static int waves(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    // update_pressure(particles, n_p, rho_0, g, ly);
-    update_pressureMod(particles, n_p, rho_0);
+    update_pressureHydro(particles, n_p_dim_x, n_p_dim_y, rho_0);
+    imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     show(particles, animation, i, false, false);
 
