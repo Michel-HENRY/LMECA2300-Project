@@ -67,6 +67,7 @@ void update_pressure(Particle** p, int n_p, double rho_0, double g, double H){
   double gamma = 7;
   double c = 1500;
   double B = rho_0*c*c/gamma;
+  B = fmin(B,1e5);
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
@@ -100,6 +101,7 @@ void update_pressureMod(Particle** p, int n_p, double rho_0){
   double gamma = 7;
   double c = 1500;
   double B = rho_0*c*c/gamma;
+  B = fmin(B,1e5);
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
@@ -173,15 +175,19 @@ static Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     //TODO : Fix gradient de pression
     // printf("P = %f\n", pi->fields->P);
     Vector* grad_Pressure = grad_P(pi,kernel);
-    times_into(grad_Pressure, -1);
+    times_into(grad_Pressure, -1/rho);
     // printf("Gradient de pression %i: \n",i);
     // Vector_print(grad_Pressure);
     Vector* laplacian_u = lapl_u_shao(pi,kernel);
     // printf("Laplacian %i :\n", i);
     // Vector_print(laplacian_u);
     times_into(laplacian_u, viscosity);
+
+    // External forces
     Vector* forces = pi->fields->f;
-    sum_into(forces, force_surface[i]);
+    forces->X[1] = -pi->param->g*rho;         // Add gravity
+    sum_into(forces, force_surface[i]);    // Add surface tension
+    times_into(forces, 1/rho);                // Dv/Dt = ... + F/rho
 
     rhs[i] = Vector_new(2);
     sum_into(rhs[i],grad_Pressure);

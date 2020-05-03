@@ -372,7 +372,7 @@ static int dam_break(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressureDam(particles, n_p, rho_0, g, H);
+    update_pressureDam(particles, n_p, rho_0, g, ly);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     show(particles, animation, i, false, false);
 
@@ -495,15 +495,15 @@ static int hydrostatic_eq(){
 }
 
 static int waves(){
-  
+
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 25;
+  int n_p_dim = 75;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
   double dynamic_viscosity = 1e-3;        // Viscosité dynamique
-  double g = 0.0;                        // Gravité
+  double g = 9.81;                        // Gravité
   int n_p_dim_x = n_p_dim;                // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*(ly/lx);
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
@@ -522,8 +522,8 @@ static int waves(){
   Parameters* param = Parameters_new(mass, dynamic_viscosity, h, Rp, tension, treshold,P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
   // Apply perturbation
-  double w = 2*M_PI*lx/2;
-  double eps = lx/10;
+  double w = 10*M_PI*lx;
+  double eps = lx/50;
   for(int i = 0; i < n_p_dim_x; i++){
     for(int j = 0; j < n_p_dim_y; j ++){
       // y -= y/ly * eps*cos(wx)
@@ -563,7 +563,7 @@ static int waves(){
   // ------------------------------------------------------------------
   double t = 0;
   double tEnd = 10;
-  double dt = 1e-1;
+  double dt = 1e-4;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
@@ -574,8 +574,8 @@ static int waves(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    // update_pressureEq(particles, n_p);
-    update_pressureMod(particles,n_p,rho_0);
+    // update_pressure(particles, n_p, rho_0, g, ly);
+    update_pressureMod(particles, n_p, rho_0);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     show(particles, animation, i, false, false);
 
