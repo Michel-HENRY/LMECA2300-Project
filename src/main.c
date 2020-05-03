@@ -498,7 +498,7 @@ static int waves(){
 
   double lx = 2;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 100;
+  int n_p_dim = 80;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
@@ -523,7 +523,7 @@ static int waves(){
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
   // Apply perturbation
   double w = 10*M_PI*lx;                        // Pulsation de la perturbation si périodique
-  double eps = lx/15;                           // Amplitude de la perturbation
+  double eps = lx/8;                           // Amplitude de la perturbation
   double sigma = 0.025;                          // Ecart-type de la perturbation
   for(int j = 0; j < n_p_dim_y; j++){
     for(int i = 0; i < n_p_dim_x; i++){
@@ -564,8 +564,8 @@ static int waves(){
   // ------------------------ Start integration -----------------------
   // ------------------------------------------------------------------
   double t = 0;
-  double tEnd = 10;
-  double dt = 1e-4;
+  double tEnd = 180;
+  double dt = 3e-5;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);

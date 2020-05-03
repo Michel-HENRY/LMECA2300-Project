@@ -44,7 +44,7 @@ void main()
 	outColor.g = col.y;
 	outColor.b = col.z;
 	if(marker == 3){//Light particules
-		if(0 == 0){//posGeom.x + localPos.x > 0 && posGeom.y + localPos.y > 0){
+		if(posGeom.x < 0 && posGeom.y < 0){
 			if(distToCenter > 0.99){
 				outColor.a = 1;
 			} else
@@ -69,6 +69,9 @@ void main()
 		outColor = m;
 		outColor.a = 1;
 		outColor.a *= alpha.x;		
+	} else if(speedGeom.x == -3000){
+		if(distToCenter < 0.75)
+			outColor.a = 0;
 	} else {
 		/*
 		float distToLight = 1 - length(posGeom + width/2)/width;//- length(abs(localPos + width/2)/2) + 0.5;

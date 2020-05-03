@@ -61,7 +61,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 	bov_points_set_width(animation->shadow, 1e-15);
 
 	GLfloat(*data3)[8] = malloc(sizeof(data3[0]));
-	data3[0][0] = 0.4f; data3[0][1] = 0.25f;
+	data3[0][0] = 2.0f; data3[0][1] = 1.5f;
 	data3[0][2] = 0; data3[0][3] = 0; 
 	data3[0][4] = 0.98f; data3[0][5] = 0.87f;
 	data3[0][6] = 0.137f; data3[0][2] = 1; 
@@ -69,7 +69,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 	bov_points_set_color(animation->light,(GLfloat[]){0.98f, 0.87f, 0.137f, 1.0});
 	bov_points_set_outline_color(animation->light, (GLfloat[]){0.98f, 0.87f, 0.137f, 1.0});
 	bov_points_set_marker(animation->light, 3);
-	bov_points_set_width(animation->light, 1);
+	bov_points_set_width(animation->light, 3);
 	bov_points_set_pos(animation->light, (GLfloat[]){0.0f, 0.0f});
 
 	free(data);
@@ -103,7 +103,8 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 	animation->plot_liquid = bov_text_new((GLubyte[]) {
 		"Liquid\n"
 	}, GL_STATIC_DRAW);
-	bov_text_set_space_type(animation->plot_none, PIXEL_SPACE);bov_text_set_space_type(animation->plot_pressure, PIXEL_SPACE);bov_text_set_space_type(animation->plot_density, PIXEL_SPACE);
+	bov_text_set_space_type(animation->plot_none, PIXEL_SPACE);bov_text_set_space_type(animation->plot_pressure, PIXEL_SPACE);
+	bov_text_set_space_type(animation->plot_density, PIXEL_SPACE);
 	bov_text_set_space_type(animation->plot_light, PIXEL_SPACE);bov_text_set_space_type(animation->plot_liquid, PIXEL_SPACE);
 	bov_text_set_fontsize(animation->plot_none, 16.0f);bov_text_set_fontsize(animation->plot_pressure, 16.0f);bov_text_set_fontsize(animation->plot_density, 16.0f);
 	bov_text_set_fontsize(animation->plot_light, 16.0f);bov_text_set_fontsize(animation->plot_liquid, 16.0f);
@@ -191,8 +192,8 @@ static void colormap(float v, float color[3]){
 }
 
 static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particles, int n_p, int mask){
-	double light_X = 0.4f;
-	double light_Y = 0.25f;
+	double light_X = 2.0f;
+	double light_Y = 1.5f;
 
 	double P_M = P_max(particles, n_p);
 	double P_m = P_min(particles, n_p);
@@ -232,17 +233,17 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 		    int my = 1;
 		    if(light_Y > y)
 		    	my = -1;
-		    data2[9*i + 1][0] = mx + light_X;
-		    data2[9*i + 1][1] = my*tan(theta-alpha) + light_Y;
-		    data2[9*i + 2][0] = mx + light_X;
-		    data2[9*i + 2][1] = my*tan(theta+alpha) + light_Y;
+		    data2[9*i + 1][0] = 3*mx + light_X;
+		    data2[9*i + 1][1] = 3*my*tan(theta-alpha) + light_Y;
+		    data2[9*i + 2][0] = 3*mx + light_X;
+		    data2[9*i + 2][1] = 3*my*tan(theta+alpha) + light_Y;
 
-		    data2[9*i + 3][0] = p->param->Rp*cos(theta-alpha+PI/2) + x;
-		    data2[9*i + 3][1] = p->param->Rp*sin(theta-alpha+PI/2) + y;
-		    data2[9*i + 4][0] = p->param->Rp*cos(theta-alpha-PI/2) + x;
-		    data2[9*i + 4][1] = p->param->Rp*sin(theta-alpha-PI/2) + y;
-		    data2[9*i + 5][0] = mx + light_X;
-		    data2[9*i + 5][1] = my*tan(theta-alpha) + light_Y;
+		    data2[9*i + 3][0] = mx*p->param->Rp*cos(theta-alpha+PI/2) + x;
+		    data2[9*i + 3][1] = my*p->param->Rp*sin(theta-alpha+PI/2) + y;
+		    data2[9*i + 4][0] = mx*p->param->Rp*cos(theta-alpha-PI/2) + x;
+		    data2[9*i + 4][1] = my*p->param->Rp*sin(theta-alpha-PI/2) + y;
+		    data2[9*i + 5][0] = data2[9*i + 1][0];
+		    data2[9*i + 5][1] = data2[9*i + 1][1];
 
 		    data2[9*i + 6][0] = data2[9*i + 3][0];
 		    data2[9*i + 6][1] = data2[9*i + 3][1];
@@ -250,14 +251,14 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 		    data2[9*i + 7][1] = data2[9*i + 1][1];
 		    data2[9*i + 8][0] = data2[9*i + 2][0];
 		    data2[9*i + 8][1] = data2[9*i + 2][1];
+
 		    data[i][2] = -2000;
 	    } else if(mask%5 == 2)
 	      colormap((p->fields->rho-r_m)/(r_M-r_m), &data[i][4]); // fill colormap
 	  	else if(mask%5 == 1)
 	      colormap((p->fields->P-P_m)/(P_M-P_m), &data[i][4]); // fill colormap
 	  	else
-	      colormap(0.2, &data[i][4]); // fill colormap
-	      // colormap(p->fields->Cs, &data[i][4]);
+	  	  colormap(0.2, &data[i][4]); // fill colormap
 	    data[i][7] = 0.8f; // transparency
 
 	}
@@ -267,6 +268,25 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
   // Update bov_particles
 	bov_window_t* window = animation->window;
 	int nbr = bov_window_get_counter(window);
+	if(iter <= 100){
+		nbr = 0;
+	} else if(iter <= 200){
+		nbr = 1;
+	} else if(iter <= 300){
+		nbr = 2;
+	} else if(iter <= 400){
+		nbr = 3;
+	} else if(iter <= 500){
+		nbr = 4;
+	} else if(iter*3e-5 <= 10){
+		nbr = 4;
+	} else if(iter*3e-5 <= 40){
+		nbr = 3;
+	} else if(iter*3e-5 <= 80){
+		nbr = 1;
+	} else {
+		nbr = 0;
+	}
 	bov_points_set_width(animation->bov_particles, particles[0]->param->Rp);
 	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_density, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
@@ -275,7 +295,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	if(nbr%5 == 4){
 		bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
-		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*2);
+		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*4);
 	}
 	else if(nbr%5 == 3)
 		bov_text_set_color(animation->plot_light, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
@@ -324,7 +344,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			bov_text_draw(window, animation->plot_density);
 			bov_text_draw(window, animation->plot_light);
 			bov_text_draw(window, animation->plot_liquid);
-			if (iter%10 == 0) {
+			if (iter%50 == 0) {
 				bov_window_screenshot(window, screenshot_name);
 			}
 			bov_window_update(window);
