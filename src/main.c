@@ -26,7 +26,7 @@ int main(){
   // boundary_validation();
   // SPH_operator_validation();
   // free_surface_validation();
-  hydrostatic_eq();
+  // hydrostatic_eq();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
   int n_p = n_p_dim_x*n_p_dim_y;
@@ -454,7 +454,7 @@ int hydrostatic_eq(){
     // ------------------------------------------------------------------
     double t = 0;
     double tEnd = 10;
-    double dt = 1e-3;
+    double dt = 1e-1;
     int iter_max = (int) (tEnd-t)/dt;
     int output = 1;
     printf("iter max = %d\n",iter_max);
@@ -465,7 +465,8 @@ int hydrostatic_eq(){
       printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
       update_cells(grid, particles, n_p);
       update_neighbors(grid, particles, n_p, i);
-      update_pressureEq(particles, n_p);
+      // update_pressureEq(particles, n_p);
+      update_pressureMod(particles,n_p,rho_0);
       time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
       show(particles, animation, i, false, false);
 
@@ -473,7 +474,7 @@ int hydrostatic_eq(){
       i++;
       t += dt;
     }
-    show(particles,animation, iter_max, true, true);
+    show(particles,animation, iter_max, false, true);
 
 
 
