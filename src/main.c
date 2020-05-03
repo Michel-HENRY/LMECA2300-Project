@@ -89,7 +89,7 @@ Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain
 int boundary_validation(){
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 20;                       // Nombre moyen de particule par dimension
+  int n_p_dim = 8;                       // Nombre moyen de particule par dimension
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale

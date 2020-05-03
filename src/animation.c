@@ -57,7 +57,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
 	GLfloat(*data2)[2] = malloc(sizeof(data[0])*n_p*9);
 	animation->shadow = bov_points_new(data2, n_p*9, GL_DYNAMIC_DRAW);
-	bov_points_set_color(animation->shadow,(GLfloat[]){0.0, 0.0, 0.0, 0.2});
+	bov_points_set_color(animation->shadow,(GLfloat[]){0.0, 0.0, 0.0, 0.2}); // 0.72
 	bov_points_set_width(animation->shadow, 1e-10);
 
 	GLfloat(*data3)[8] = malloc(sizeof(data[0]));
@@ -236,17 +236,10 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 		    data2[9*i + 5][0] = 1 + light_X;
 		    data2[9*i + 5][1] = 1*tan(theta-alpha) + light_Y;
 
-		    data2[9*i + 3][0] = p->param->Rp*cos(theta-alpha+PI/2) + x;
-		    data2[9*i + 3][1] = p->param->Rp*sin(theta-alpha+PI/2) + y;
-		    data2[9*i + 4][0] = p->param->Rp*cos(theta-alpha-PI/2) + x;
-		    data2[9*i + 4][1] = p->param->Rp*sin(theta-alpha-PI/2) + y;
-		    data2[9*i + 5][0] = data2[9*i + 1][0];
-		    data2[9*i + 5][1] = data2[9*i + 1][1];
-
 		    data2[9*i + 6][0] = data2[9*i + 3][0];
 		    data2[9*i + 6][1] = data2[9*i + 3][1];
-		    data2[9*i + 7][0] = data2[9*i + 4][0];
-		    data2[9*i + 7][1] = data2[9*i + 4][1];
+		    data2[9*i + 7][0] = data2[9*i + 1][0];
+		    data2[9*i + 7][1] = data2[9*i + 1][1];
 		    data2[9*i + 8][0] = data2[9*i + 2][0];
 		    data2[9*i + 8][1] = data2[9*i + 2][1];
 		    data[i][2] = -2000;
