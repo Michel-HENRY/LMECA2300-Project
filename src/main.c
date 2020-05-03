@@ -495,6 +495,7 @@ static int hydrostatic_eq(){
 }
 
 static int waves(){
+  
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
   int n_p_dim = 25;
