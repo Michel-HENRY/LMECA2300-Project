@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar
+CMAKE_SOURCE_DIR = /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar
+CMAKE_BINARY_DIR = /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,14 +80,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar && $(CMAKE_COMMAND) -E cmake_progress_start /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/CMakeFiles /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glfw/CMakeFiles/progress.marks
-	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/CMakeFiles 0
+	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project && $(CMAKE_COMMAND) -E cmake_progress_start /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/CMakeFiles /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glfw/CMakeFiles/progress.marks
+	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/clean
+	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/clean
 .PHONY : clean
 
 # The main clean target
@@ -97,17 +97,17 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/preinstall
+	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/preinstall
+	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project && $(MAKE) -f CMakeFiles/Makefile2 deps/BOV/deps/glfw/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Help Target
@@ -129,6 +129,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

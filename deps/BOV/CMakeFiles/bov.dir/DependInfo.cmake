@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/src/BOV.c" "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/CMakeFiles/bov.dir/src/BOV.c.o"
+  "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/src/BOV.c" "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/CMakeFiles/bov.dir/src/BOV.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 
@@ -19,8 +19,8 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glad/CMakeFiles/glad.dir/DependInfo.cmake"
-  "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glfw/src/CMakeFiles/glfw.dir/DependInfo.cmake"
+  "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glad/CMakeFiles/glad.dir/DependInfo.cmake"
+  "/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glfw/src/CMakeFiles/glfw.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

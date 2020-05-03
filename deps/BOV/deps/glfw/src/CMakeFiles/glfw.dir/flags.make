@@ -6,7 +6,7 @@ C_FLAGS = -fPIC   -Wall
 
 C_DEFINES = -D_GLFW_USE_CONFIG_H
 
-C_INCLUDES = -I/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glfw/include -I/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-seminar/deps/BOV/deps/glfw/src 
+C_INCLUDES = -I/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glfw/include -I/home/jimmy/Bureau/UCL/Advanced_Numerical_Method/LMECA2300-Project/deps/BOV/deps/glfw/src 
 
 # Custom flags: deps/BOV/deps/glfw/src/CMakeFiles/glfw.dir/context.c.o_FLAGS = -Wdeclaration-after-statement
 
