@@ -201,8 +201,8 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
 
 
     // Viscosity forces
-    // Vector* laplacian_u = lapl_u_shao(pi,kernel);
-    Vector* laplacian_u = lapl_u(pi,kernel);
+    Vector* laplacian_u = lapl_u_shao(pi,kernel);
+    // Vector* laplacian_u = lapl_u(pi,kernel);
     times_into(laplacian_u, nu);
 
     // External forces

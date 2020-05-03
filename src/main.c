@@ -513,7 +513,7 @@ static int waves(){
   double Rp = delta/2;                        // Rayon d'une particule
   double eta = 0.00;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
-  double tension = 0.0;//7*1e-2;                     // Tension de surface de l'eau
+  double tension = 7*1e-2;                     // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------
