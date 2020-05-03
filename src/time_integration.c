@@ -219,7 +219,7 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
     times_into(forces, 1/rho);                // Dv/Dt = ... + F/rho
 
     // Artificial viscosity
-    double a = 0.2; //0.3 is also a good value
+    double a = 0;//0.2; //0.3 is also a good value
     double b = 0;
     Vector* pij = get_Pi_ij(pi,a,b,kernel);
     times_into(pij, -1);

@@ -164,7 +164,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	strcat(screenshot_name, int_string);
 
   bov_window_t* window = animation->window;
-  bov_window_set_zoom(window,(GLfloat) 3);
+  // bov_window_set_zoom(window,(GLfloat) 3);
   double tbegin = bov_window_get_time(window);
   double timeout = animation->timeout;
 
