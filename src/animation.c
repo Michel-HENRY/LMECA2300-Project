@@ -278,11 +278,11 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 		nbr = 3;
 	} else if(iter <= 500){
 		nbr = 4;
-	} else if(iter*3e-5 <= 10){
+	} else if(iter*1e-5 <= 5){
 		nbr = 4;
-	} else if(iter*3e-5 <= 40){
+	} else if(iter*1e-5 <= 15){
 		nbr = 3;
-	} else if(iter*3e-5 <= 80){
+	} else if(iter*1e-5 <= 22){
 		nbr = 1;
 	} else {
 		nbr = 0;
