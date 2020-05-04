@@ -23,12 +23,12 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  // dam_break();
+  dam_break();
   // boundary_validation();
   // SPH_operator_validation();
   // free_surface_validation();
   // hydrostatic_eq();
-  waves();
+  // waves();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
   int n_p = n_p_dim_x*n_p_dim_y;
@@ -306,7 +306,7 @@ static int SPH_operator_validation(){
 static int dam_break(){
   double lx = 0.114;                          // Longueur du domaine de particule
   double ly = 0.228;                          // Hauteur du domaine de particle
-  int n_p_dim = 36;
+  int n_p_dim = 20;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
