@@ -268,6 +268,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
   // Update bov_particles
 	bov_window_t* window = animation->window;
 	int nbr = bov_window_get_counter(window);
+	/*
 	if(iter <= 100){
 		nbr = 0;
 	} else if(iter <= 200){
@@ -279,14 +280,14 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	} else if(iter <= 500){
 		nbr = 4;
 	} else if(iter*1e-5 <= 5){
-		nbr = 4;
+		nbr = 1;//4
 	} else if(iter*1e-5 <= 15){
-		nbr = 3;
+		nbr = 1;//3
 	} else if(iter*1e-5 <= 22){
 		nbr = 1;
 	} else {
 		nbr = 0;
-	}
+	}*/
 	bov_points_set_width(animation->bov_particles, particles[0]->param->Rp);
 	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_density, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});

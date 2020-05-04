@@ -498,7 +498,7 @@ static int waves(){
 
   double lx = 2;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 50;
+  int n_p_dim = 30;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
@@ -565,7 +565,7 @@ static int waves(){
   // ------------------------------------------------------------------
   double t = 0;
   double tEnd = 120;
-  double dt = 1e-5;
+  double dt = 1e-4;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
