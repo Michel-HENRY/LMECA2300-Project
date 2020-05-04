@@ -79,8 +79,8 @@ void update_pressureMod(Particle** p, int n_p, double rho_0){
 }
 
 void imposeFScondition(Particle** particle,int n_p_dim_x,int n_p_dim_y){
-  for(int j = 0; j < n_p_dim_y; j++){
-    int i = n_p_dim_x - 1;
+  for(int i = 0; i < n_p_dim_x; i++){
+    int j = n_p_dim_y - 1;
     int index = j*n_p_dim_x + i;
     particle[index]->fields->P = particle[index]->param->P0;
     // printf("particle y = %f\n",particle[index]->fields->x->X[1]);
