@@ -15,7 +15,7 @@ static void print_vMax(Particle** p, int n_p){
   }
   printf("Max Velocity = %f\n", max_y);
 }
-static void print_rhoMax(Particle** p, int n_p){
+void print_rhoMax(Particle** p, int n_p){
   double max_y = p[0]->fields->rho;
 
   for(int i = 1; i < n_p; i++){
@@ -26,7 +26,7 @@ static void print_rhoMax(Particle** p, int n_p){
   }
   printf("Max Density = %f\n", max_y);
 }
-static void print_rhoMin(Particle** p, int n_p){
+void print_rhoMin(Particle** p, int n_p){
   double min_y = p[0]->fields->rho;
 
   for(int i = 1; i < n_p; i++){
@@ -81,7 +81,7 @@ void update_pressureMod(Particle** p, int n_p, double rho_0){
 void imposeFScondition(Particle** particle,int n_p_dim_x,int n_p_dim_y){
   for(int j = 0; j < n_p_dim_y; j++){
     int i = n_p_dim_x - 1;
-    int index = i*n_p_dim_y + j;
+    int index = j*n_p_dim_x + i;
     particle[index]->fields->P = particle[index]->param->P0;
     // printf("particle y = %f\n",particle[index]->fields->x->X[1]);
     }
@@ -111,7 +111,7 @@ void update_pressureHydro(Particle** particles, int n_p_dim_x, int n_p_dim_y, do
 
 
 
-static void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
+void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     Vector* ui = pi->fields->u;
@@ -139,7 +139,7 @@ static void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
 
   }
 }
-static double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
+double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
   double* rhs = (double*) malloc(sizeof(double)*n_p);
   for(int i = 0; i < n_p; i ++){
     Particle* pi = p[i];
@@ -151,7 +151,7 @@ static double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
   return rhs;
 }
 
-static Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
+Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** rhs = (Vector**) malloc(sizeof(Vector*)*n_p);
   Vector** force_surface = get_force_surface(p, n_p, kernel);
   for(int i = 0; i < n_p; i++){
@@ -187,7 +187,7 @@ static Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   free(force_surface);
   return rhs;
 }
-static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
+Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** rhs = (Vector**) malloc(sizeof(Vector*)*n_p);
   Vector** force_surface = get_force_surface(p, n_p, kernel);
   for(int i = 0; i < n_p; i++){
@@ -212,7 +212,7 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
     times_into(forces, 1/rho);                // Dv/Dt = ... + F/rho
 
     // Artificial viscosity
-    double a = 0;//0.2; //0.3 is also a good value
+    double a = 0.3;//0.2; //0.3 is also a good value
     double b = 0;
     Vector* pij = get_Pi_ij(pi,a,b,kernel);
     times_into(pij, -1);
@@ -243,7 +243,7 @@ static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel ker
 }
 
 
-static void CSPM_density(Particle** p, int n_p, Kernel kernel){
+void CSPM_density(Particle** p, int n_p, Kernel kernel){
   double* rho_CSPM = (double*) malloc(sizeof(double)*n_p);
 
   for(int i = 0; i < n_p; i++){

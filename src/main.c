@@ -513,7 +513,7 @@ static int waves(){
   double Rp = delta/2;                        // Rayon d'une particule
   double eta = 0.00;                       // XSPH parameter from 0 to 1
   double treshold = 20;                   // Critère pour la surface libre
-  double tension = 7*1e-2;                     // Tension de surface de l'eau
+  double tension = 0;//7*1e-2;                     // Tension de surface de l'eau
   double P0 = 0;                          // Pression atmosphérique
 
   // ------------------------------------------------------------------
@@ -576,9 +576,31 @@ static int waves(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressureHydro(particles, n_p_dim_x, n_p_dim_y, rho_0);
+    // update_pressureHydro(particles, n_p_dim_x, n_p_dim_y, rho_0);
+    double* rhs_mass = rhs_mass_conservation(particles,n_p,kernel);
+    time_integration_mass(particles,n_p,rhs_mass,dt);
+    free(rhs_mass);
+    CSPM_density(particles,n_p, kernel);
+
+    print_rhoMax(particles,n_p);
+    print_rhoMin(particles,n_p);
+
+
+    update_pressureMod(particles, n_p, rho_0);
+    // update_pressureHydro(particles, n_p_dim_x, n_p_dim_y, rho_0);
     imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
-    time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
+
+    Vector** rhs_momentum = CSPM_rhs_momentum_conservation(particles,n_p,kernel);
+    time_integration_momentum(particles,n_p,rhs_momentum,dt);
+    for(int i = 0; i < n_p; i++)
+      Vector_free(rhs_momentum[i]);
+    free(rhs_momentum);
+
+    // XSPH_correction(p, n_p, kernel, eta);
+
+    time_integration_position(particles,n_p,dt);
+    reflective_boundary(particles, n_p, edges);
+
     show(particles, animation, i, false, false);
 
     printf("Time integration completed\n");
