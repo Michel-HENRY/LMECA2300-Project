@@ -324,7 +324,7 @@ static int dam_break(){
   // ------------------------------------------------------------------
   Parameters* param = Parameters_new(mass, dynamic_viscosity, h, Rp, tension, treshold,P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
-  set_artificialViscosity(param, (double)0.3, (double)0);
+  set_artificialViscosity(param, 0.3, 0);
 
   //Set density
   double B = 0.85*1e5;
@@ -373,7 +373,7 @@ static int dam_break(){
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
     update_pressure(particles, n_p, rho_0, B, gamma);
-    // imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
+    imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     show(particles, animation, i, false, false);
 

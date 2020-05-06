@@ -518,13 +518,15 @@ void density(Particle** p, int n_p, Kernel kernel){
 
 void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
 
-  density(p,n_p, kernel);
+  // density(p,n_p, kernel);
 
   // print_dP(p,n_p,kernel);
-
+  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
   Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
+
   time_integration_momentum(p,n_p,rhs_momentum,dt);
   time_integration_position(p,n_p,dt);
+  time_integration_mass(p,n_p,rhs_mass,dt);
   reflective_boundary(p, n_p, edges);
 
   print_rhoMax(p,n_p);
@@ -555,11 +557,12 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);
 
   time_integration_momentum(p,n_p,rhs_momentum,dt);
-  time_integration_mass(p,n_p,rhs_mass,dt);
   XSPH_correction(p, n_p, kernel, eta);
-
+  
   time_integration_position(p,n_p,dt);
   reflective_boundary(p, n_p, edges);
+
+  time_integration_mass(p,n_p,rhs_mass,dt);
 
   print_rhoMax(p,n_p);
   print_rhoMin(p,n_p);
