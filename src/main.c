@@ -23,10 +23,10 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  // dam_break();
+  dam_break();
   // boundary_validation();
   // SPH_operator_validation();
-  hydrostatic_eq();
+  // hydrostatic_eq();
   // waves();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
@@ -361,7 +361,7 @@ static int dam_break(){
   // ------------------------------------------------------------------
   double t = 0;
   double tEnd = 10;
-  double dt = 5e-5;
+  double dt = 1e-5;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
@@ -407,7 +407,7 @@ static int hydrostatic_eq(){
     // Parameters
     double rho_0 = 1e3;                     // Densité initiale
     double dynamic_viscosity = 0;        // Viscosité dynamique
-    double g = 9.81;                        // Gravité
+    double g = 0.00;                        // Gravité
     int n_p_dim_x = n_p_dim;                // Nombre de particule par dimension
     int n_p_dim_y = n_p_dim*(ly/lx);
     int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
