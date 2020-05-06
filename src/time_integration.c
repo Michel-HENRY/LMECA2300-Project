@@ -59,6 +59,26 @@ void print_Pmin(Particle** p, int n_p){
   }
   printf("Min Pressure = %f\n", min_y);
 }
+void print_dPminmax(Vector** dP, int n_p){
+  double mindPx = dP[0]->X[0];    double mindPy = dP[0]->X[1];
+  double maxdPx = dP[0]->X[0];    double maxdPy = dP[0]->X[1];
+
+  for(int i = 1 ; i  < n_p; i++){
+    if(dP[i]->X[0] > maxdPx){
+      maxdPx = dP[i]->X[0];
+    }
+    if(dP[i]->X[1] > maxdPy){
+      maxdPy = dP[i]->X[1];
+    }
+    if(dP[i]->X[0] < mindPx){
+      mindPx = dP[i]->X[0];
+    }
+    if(dP[i]->X[1] > mindPy){
+      mindPy = dP[i]->X[1];
+    }
+  }
+  printf("\tMin\t\tMax\ndPx :\t %f\t\t%f\ndPy :\t %f\t\t%f\n",mindPx, maxdPx, mindPy, maxdPy);
+}
 static void print_momentumMax(Vector** momentum,  int n_p){
   double max_y = 0;
   double max_x = 0;
@@ -220,6 +240,7 @@ Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** rhs = (Vector**) malloc(sizeof(Vector*)*n_p);
   Vector** force_surface = get_force_surface(p, n_p, kernel);
   Vector** dP = get_dP(p,n_p,kernel);
+  print_dP(dP,n_p);
   for(int i = 0; i < n_p; i++)
     times_into(dP[i],-1/p[i]->fields->rho);
   CSPM_pressure(p,n_p,kernel, dP);
@@ -529,7 +550,7 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
   // density(p,n_p,kernel);
   // if ((i+1)%30 == 0) CSPM_density(p,n_p, kernel);
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);
-  
+
   time_integration_momentum(p,n_p,rhs_momentum,dt);
   time_integration_mass(p,n_p,rhs_mass,dt);
   XSPH_correction(p, n_p, kernel, eta);
