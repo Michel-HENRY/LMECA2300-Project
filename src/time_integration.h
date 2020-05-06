@@ -20,7 +20,7 @@ void density(Particle** p, int n_p, Kernel kernel);
 void time_integration_momentum(Particle** p, int n_p, Vector** rhs_momentum,double dt);
 void time_integration_position(Particle** p, int n_p, double dt);
 
-void update_pressureMod(Particle** p, int n_p, double rho_0, double B, double gamma);
+void update_pressure(Particle** p, int n_p, double rho_0, double B, double gamma);
 void update_pressureEq(Particle** p, int n_p);
 void imposeFScondition(Particle** particles,int n_p_dim_x,int n_p_dim_y);
 void update_pressureHydro(Particle** particles, int n_p_dim_x, int n_p_dim_y, double rho_0);

@@ -94,7 +94,7 @@ void update_pressureEq(Particle** p, int n_p){
     pi->fields->P = pi->param->P0;
   }
 }
-void update_pressureMod(Particle** p, int n_p, double rho_0, double B, double gamma){
+void update_pressure(Particle** p, int n_p, double rho_0, double B, double gamma){
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
@@ -526,14 +526,12 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
     first = false;
   }
   double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
-  time_integration_mass(p,n_p,rhs_mass,dt);
   // density(p,n_p,kernel);
   // if ((i+1)%30 == 0) CSPM_density(p,n_p, kernel);
-
-
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);
+  
   time_integration_momentum(p,n_p,rhs_momentum,dt);
-
+  time_integration_mass(p,n_p,rhs_mass,dt);
   XSPH_correction(p, n_p, kernel, eta);
 
   time_integration_position(p,n_p,dt);

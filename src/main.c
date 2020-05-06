@@ -25,10 +25,9 @@ Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain
 int main(){
   // dam_break();
   // boundary_validation();
-  SPH_operator_validation();
-  // hydrostatic_eq();
+  // SPH_operator_validation();
+  hydrostatic_eq();
   // waves();
-  // vortices();
 }
 Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double g, double rho, double P, bool isUniform){
   int n_p = n_p_dim_x*n_p_dim_y;
@@ -325,7 +324,7 @@ static int dam_break(){
   // ------------------------------------------------------------------
   Parameters* param = Parameters_new(mass, dynamic_viscosity, h, Rp, tension, treshold,P0,g);
   Particle** particles = fluidProblem(param, n_p_dim_x, n_p_dim_y, g, rho_0, P0,true);
-  set_artificialViscosity(param, (double)0.015, (double)0);
+  set_artificialViscosity(param, (double)0.3, (double)0);
 
   //Set density
   double B = 0.85*1e5;
@@ -354,7 +353,7 @@ static int dam_break(){
   // ------------------------------------------------------------------
   // ------------------------ SET Animation ---------------------------
   // ------------------------------------------------------------------
-  double timeout = 0.00001;                 // Durée d'une frame
+  double timeout = 0.1;                 // Durée d'une frame
   Animation* animation = Animation_new(n_p, timeout, grid, Rp, domain);
 
   // ------------------------------------------------------------------
@@ -362,7 +361,7 @@ static int dam_break(){
   // ------------------------------------------------------------------
   double t = 0;
   double tEnd = 10;
-  double dt = 1e-5;
+  double dt = 5e-5;
   int iter_max = (int) (tEnd-t)/dt;
   int output = 1;
   printf("iter max = %d\n",iter_max);
@@ -373,7 +372,7 @@ static int dam_break(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-    update_pressureMod(particles, n_p, rho_0, B, gamma);
+    update_pressure(particles, n_p, rho_0, B, gamma);
     // imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
     time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     show(particles, animation, i, false, false);
@@ -408,7 +407,7 @@ static int hydrostatic_eq(){
     // Parameters
     double rho_0 = 1e3;                     // Densité initiale
     double dynamic_viscosity = 0;        // Viscosité dynamique
-    double g = 9.81;                        // Gravité
+    double g = 0.00;                        // Gravité
     int n_p_dim_x = n_p_dim;                // Nombre de particule par dimension
     int n_p_dim_y = n_p_dim*(ly/lx);
     int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
@@ -423,7 +422,6 @@ static int hydrostatic_eq(){
     double c = 1500;
     double gamma = 7;
     double B = c*c*rho_0/gamma;
-    B = g*rho_0*ly;
 
 
     // ------------------------------------------------------------------
@@ -476,7 +474,7 @@ static int hydrostatic_eq(){
       printf("-------- Stabilité condition dt <= %e -------\n", delta*1e-1);
       update_cells(grid, particles, n_p);
       update_neighbors(grid, particles, n_p, i);
-      update_pressureMod(particles,n_p,rho_0,B, gamma);
+      update_pressure(particles,n_p,rho_0,B, gamma);
       // update_pressureEq(particles, n_p);
       // time_integration(particles, n_p, kernel, dt, edges);
       time_integration_CSPM(particles, n_p, kernel, dt, edges,0);
@@ -592,7 +590,7 @@ static int waves(){
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
 
-    update_pressureMod(particles, n_p, rho_0, B,gamma);
+    update_pressure(particles, n_p, rho_0, B,gamma);
     // imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
 
     double* rhs_mass = rhs_mass_conservation(particles,n_p,kernel);
@@ -744,7 +742,7 @@ static int waves(){
 //     print_rhoMax(particles,n_p);
 //     print_rhoMin(particles,n_p);
 //
-//     update_pressureMod(particles, n_p, rho_0);
+//     update_pressure(particles, n_p, rho_0);
 //
 //     Vector** rhs_momentum = CSPM_rhs_momentum_conservation(particles,n_p,kernel);
 //     time_integration_momentum(particles,n_p,rhs_momentum,dt);
