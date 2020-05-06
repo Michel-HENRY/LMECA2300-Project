@@ -205,6 +205,8 @@ Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** dP = get_dP(p,n_p,kernel);
   for(int i = 0; i < n_p; i++)
     times_into(dP[i],-1/p[i]->fields->rho);
+
+  // print_dPminmax(dP,n_p);
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
@@ -240,10 +242,11 @@ Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** rhs = (Vector**) malloc(sizeof(Vector*)*n_p);
   Vector** force_surface = get_force_surface(p, n_p, kernel);
   Vector** dP = get_dP(p,n_p,kernel);
-  print_dP(dP,n_p);
-  for(int i = 0; i < n_p; i++)
+  for(int i = 0; i < n_p; i++){
     times_into(dP[i],-1/p[i]->fields->rho);
+  }
   CSPM_pressure(p,n_p,kernel, dP);
+  print_dPminmax(dP,n_p);
 
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
@@ -251,8 +254,8 @@ Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
     double nu = pi->param->dynamic_viscosity/pi->fields->rho;
 
     // Viscosity forces
-    Vector* laplacian_u = lapl_u_shao(pi,kernel);
-    // Vector* laplacian_u = lapl_u(pi,kernel);
+    // Vector* laplacian_u = lapl_u_shao(pi,kernel);
+    Vector* laplacian_u = lapl_u(pi,kernel);
     times_into(laplacian_u, nu);
 
     // External forces
@@ -384,8 +387,8 @@ void CSPM_pressure(Particle** p, int n_p, Kernel kernel, Vector** dP){
     dP_CSPM[i]->X[1] = numy/deny;
   }
   for(int i = 0; i < n_p; i++){
-    dP[i]->X[0] = dP_CSPM[i]->X[0];
-    dP[i]->X[1] = dP_CSPM[i]->X[1];
+    dP[i]->X[0] = -dP_CSPM[i]->X[0];
+    dP[i]->X[1] = -dP_CSPM[i]->X[1];
     Vector_free(dP_CSPM[i]);
   }
   free(dP_CSPM);

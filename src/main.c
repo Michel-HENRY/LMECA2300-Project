@@ -407,12 +407,12 @@ static int hydrostatic_eq(){
     // Parameters
     double rho_0 = 1e3;                     // Densité initiale
     double dynamic_viscosity = 0;        // Viscosité dynamique
-    double g = 0.00;                        // Gravité
+    double g = 9.81;                        // Gravité
     int n_p_dim_x = n_p_dim;                // Nombre de particule par dimension
     int n_p_dim_y = n_p_dim*(ly/lx);
     int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
     double delta = lx/n_p_dim_x;                // step between neighboring particles
-    double h = sqrt(21)*lx/n_p_dim_x;      // Rayon du compact pour l'approximation
+    double h = 6*delta;      // Rayon du compact pour l'approximation
     double mass = rho_0*delta*delta;                // Masse d'une particule, constant
     double Rp = delta/2;                        // Rayon d'une particule
     double eta = 0.00;                       // XSPH parameter from 0 to 1
@@ -462,7 +462,7 @@ static int hydrostatic_eq(){
     // ------------------------------------------------------------------
     double t = 0;
     double tEnd = 1;
-    double dt = 1e-3;
+    double dt = 1e-5;
     int iter_max = (int) (tEnd-t)/dt;
     int output = 1;
     printf("iter max = %d\n",iter_max);

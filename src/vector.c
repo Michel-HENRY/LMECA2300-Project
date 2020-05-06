@@ -125,7 +125,7 @@ Vector* times(Vector* v, double a){
 }
 void times_into(Vector* v, double a){
   for(int i = 0; i < v->DIM; i++){
-    v->X[i] *= a;
+    v->X[i] = a*v->X[i];
   }
 }
 Vector* prod(Vector* v1, Vector* v2){
