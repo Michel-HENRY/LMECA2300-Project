@@ -109,7 +109,6 @@ double dist(Vector* v1, Vector* v2){
   Vector* v3 = diff(v1,v2);
   double dist = norm(v3);
   Vector_free(v3);
-
   return dist;
 }
 bool equal(Vector* v1, Vector* v2){

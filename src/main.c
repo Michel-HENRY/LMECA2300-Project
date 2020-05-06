@@ -25,8 +25,8 @@ Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain
 int main(){
   // dam_break();
   // boundary_validation();
-  // SPH_operator_validation();
-  hydrostatic_eq();
+  SPH_operator_validation();
+  // hydrostatic_eq();
   // waves();
   // vortices();
 }
@@ -187,17 +187,17 @@ static int boundary_validation(){
 static int SPH_operator_validation(){
   double lx = 1;                          // Longueur du domaine de particule
   double ly = 1;                          // Hauteur du domaine de particle
-  int n_p_dim = 25;                       // Nombre moyen de particule par dimension
+  int n_p_dim = 51;                       // Nombre moyen de particule par dimension
 
   // Parameters
-  double rho_0 = 1000.0;                       // Densité initiale
+  double rho_0 = 1000;                       // Densité initiale
   double dynamic_viscosity = 1;           // Viscosité dynamique
   double g = 0.00;                        // Gravité
   int n_p_dim_x = n_p_dim;             // Nombre de particule par dimension
   int n_p_dim_y = n_p_dim*(ly/lx);
   int n_p = n_p_dim_x*n_p_dim_y;          // Nombre de particule total
   double h = lx/n_p_dim_x;                // step between neighboring particles
-  double kh = sqrt(21)*h;      // Rayon du compact pour l'approximation
+  double kh = 6*h;      // Rayon du compact pour l'approximation
   double mass = rho_0*lx*ly/n_p;          // Masse d'une particule, constant
   double Rp = h/2;                        // Rayon d'une particule
   double eta = 0.0;                       // XSPH parameter from 0 to 1
@@ -216,9 +216,9 @@ static int SPH_operator_validation(){
     double x,y;
     x = particles[i]->fields->x->X[0];
     y = particles[i]->fields->x->X[1];
-    particles[i]->fields->P = x+1;
-    particles[i]->fields->u->X[0] = 0;
-    particles[i]->fields->u->X[1] = 0;
+    particles[i]->fields->P = y;
+    particles[i]->fields->u->X[0] = x;
+    particles[i]->fields->u->X[1] = x;
   }
 
   // ------------------------------------------------------------------
@@ -276,7 +276,9 @@ static int SPH_operator_validation(){
 
     printf("\n");
   }
-  // printf("h = %f\n",h);
+
+  printf("h = %f\t",h);
+  printf("kh = %f\n", kh );
 
   // show(particles,animation, (int) 1, true, false);
 
