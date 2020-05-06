@@ -32,10 +32,11 @@ Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel);
 Vector** get_dP(Particle** p, int n_p, Kernel kernel);
 
 // Correction Methods
-void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta);
-void CSPM_density(Particle** p, int n_p, Kernel kernel);
-static Vector* get_Pi_ij(Particle* pi, double a, double b, Kernel kernel);
-void CSPM_pressure(Particle** p, int n_p, Kernel kernel, Vector** dP);
 static void KGC(Particle* pi, Vector* dW);
+static Vector* get_Pi_ij(Particle* pi, double a, double b, Kernel kernel);
+void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta);
+double* CSPM_div(Particle** p, int n_p, Kernel kernel);
+void CSPM_density(Particle** p, int n_p, Kernel kernel);
+void CSPM_pressure(Particle** p, int n_p, Kernel kernel, Vector** dP);
 
 #endif

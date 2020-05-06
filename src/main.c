@@ -23,9 +23,9 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  dam_break();
+  // dam_break();
   // boundary_validation();
-  // SPH_operator_validation();
+  SPH_operator_validation();
   // hydrostatic_eq();
   // waves();
 }
@@ -217,7 +217,7 @@ static int SPH_operator_validation(){
     y = particles[i]->fields->x->X[1];
     particles[i]->fields->P = y;
     particles[i]->fields->u->X[0] = x;
-    particles[i]->fields->u->X[1] = x;
+    particles[i]->fields->u->X[1] = y;
   }
 
   // ------------------------------------------------------------------
@@ -244,8 +244,8 @@ static int SPH_operator_validation(){
   // ------------------------------------------------------------------
 
   // // Temporal loop
-  Kernel kernel = Quartic;
-  // Kernel kernel = Cubic;
+  // Kernel kernel = Quartic;
+  Kernel kernel = Cubic;
   // Kernel kernel = Lucy;
 
   update_cells(grid, particles, n_p);
@@ -253,6 +253,7 @@ static int SPH_operator_validation(){
   CSPM_density(particles,n_p,kernel);
   Vector** dP = get_dP(particles, n_p, kernel);
   Vector** dP_CSPM = get_dP(particles, n_p, kernel);
+  double* div = CSPM_div(particles, n_p, kernel);
 
   for(int i = 0; i < n_p ; i++){
     times_into(dP[i], 1/particles[i]->fields->rho);
@@ -271,7 +272,7 @@ static int SPH_operator_validation(){
     // Vector_free(lapl_s);
 
     double divergence = div_u(particles[i],kernel);
-    printf("\t\tdiv = %f\n",divergence);
+    printf("\t\tdiv = %f\tdivCSPM = %f\n",divergence, div[i]);
 
     printf("\n");
   }
