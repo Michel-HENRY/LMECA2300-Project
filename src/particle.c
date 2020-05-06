@@ -165,6 +165,8 @@ Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, doub
   param->treshold = treshold;
   param->P0 = P0;
 	param->g = g;
+  param->a = 0;
+  param->b = 0;
   return param;
 }
 void Parameters_free(Parameters* param){
@@ -188,6 +190,10 @@ void Fields_free(Fields* fields){
   Vector_free(fields->f);
 
   free(fields);
+}
+void set_artificialViscosity(Parameters* param, double a, double b){
+  param->a = a;
+  param->b = b;
 }
 
 // -------------------------------------------------------------------
@@ -240,4 +246,21 @@ int get_n_neighbors(Particle* p){
     n++;
   }
   return n;
+}
+
+void set_density(Particle** particles, int nx, int ny, double rho0, double B, double gamma){
+  for(int i = 0; i < nx; i++){
+    int indexTOP = (ny - 1)*nx + i;
+    double H = particles[indexTOP]->fields->x->X[1];
+    for(int j = 0;j < ny; j++){
+      int index = j*nx + i;
+      Particle* pi = particles[index];
+      double y = pi->fields->x->X[1];
+      double g = pi->param->g;
+      double P = rho0*g*(H-y);
+      double rho = rho0*pow(P/B + 1,1/gamma);
+
+      pi->fields->rho = rho;
+    }
+  }
 }

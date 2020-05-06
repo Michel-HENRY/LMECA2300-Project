@@ -61,7 +61,8 @@ Vector* grad_kernel(Vector* v1, Vector* v2, double h, Kernel kernel) {
 static double derivative_kernel(Vector* v1, Vector* v2, double h, Kernel kernel, int axis){
   double R = dist(v1,v2);
   double dWdr,drdx = 1;
-  double eta = 0.01*h*h;
+  // double eta = 0.01*h*h;
+  double eta = 0;
   drdx = (v1->X[axis] - v2->X[axis])/(R+eta);
   if(kernel == Cubic){
     dWdr = derivative_Cubic_kernel(R, h);

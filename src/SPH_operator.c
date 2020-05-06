@@ -61,7 +61,7 @@ Vector* grad_P(Particle* pi, Kernel kernel){
   return grad;
 }
 Vector* grad_local(double fi, double fj, Vector* dWij, double mj, double rhoi,double rhoj){
-  Vector* res = times(dWij, mj * (fi/(rhoi*rhoi) + fj/(rhoj*rhoj)) );
+  Vector* res = times(dWij, mj * (fi/(rhoi*rhoi) + fj/(rhoj*rhoj)));
   return res;
 }
 

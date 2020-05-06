@@ -21,6 +21,26 @@ static double P_min(Particle** p, int n_p){
   }
   return Pmin;
 }
+static double u_max(Particle** p, int n_p){
+  double Pmax = sqrt(pow(p[0]->fields->u->X[0],2) + pow(p[0]->fields->u->X[1],2));
+  for(int i = 1; i < n_p ; i++){
+    // printf("i = %d/%d\n",i,n_p);
+    if(sqrt(pow(p[i]->fields->u->X[0],2) + pow(p[i]->fields->u->X[1],2)) > Pmax){
+      Pmax = sqrt(pow(p[i]->fields->u->X[0],2) + pow(p[i]->fields->u->X[1],2));
+    }
+  }
+  return Pmax;
+}
+static double u_min(Particle** p, int n_p){
+  double Pmin = sqrt(pow(p[0]->fields->u->X[0],2) + pow(p[0]->fields->u->X[1],2));
+  for(int i = 1; i < n_p ; i++){
+    // printf("i = %d/%d\n",i,n_p);
+    if(sqrt(pow(p[i]->fields->u->X[0],2) + pow(p[i]->fields->u->X[1],2)) < Pmin){
+      Pmin = sqrt(pow(p[i]->fields->u->X[0],2) + pow(p[i]->fields->u->X[1],2));
+    }
+  }
+  return Pmin;
+}
 
 
 Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double domain[4]){
@@ -124,6 +144,8 @@ static void colormap(float v, float color[3]){
 static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
   double Pmax = P_max(particles, n_p);
   double Pmin = P_min(particles, n_p);
+  double umax = u_max(particles, n_p);
+  double umin = u_min(particles, n_p);
 	for(int i=0; i<n_p; i++) {
     // printf("i = %d/%d\n",i,n_p);
     Particle* p = particles[i];
@@ -136,6 +158,7 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
 		data[i][6] = 0;
 		// data[i][7] = 0;
     double P = p->fields->P;
+    double u = sqrt(pow(p->fields->u->X[0],2) + pow(p->fields->u->X[1],2));
     double field;
     if(Pmax == Pmin){
       field = 0.0;
@@ -143,6 +166,13 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
     else{
       field = (P - Pmin)/(Pmax - Pmin);
     }
+    // if(umax == umin){
+    //   field = 0.0;
+    // }
+    // else{
+    //   field = (u - umin)/(umax - umin);
+    // }
+
 		colormap(field, &data[i][4]); // fill color
     // colormap(p->fields->Cs, &data[i][4]);
 		data[i][7] = 0.8f; // transparency
