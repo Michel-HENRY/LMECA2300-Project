@@ -545,7 +545,7 @@ static int waves(){
   double gamma = 7;
   set_density(particles, n_p_dim_x, n_p_dim_y, rho_0, B, gamma);
 
-  double a = 0.15;
+  double a = 0;
   double b = 0;
   set_artificialViscosity(param,a,b);
 

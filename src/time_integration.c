@@ -206,6 +206,7 @@ double* CSPM_rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
     double rho = pi->fields->rho;
     // printf("div u = %f\n", du);
     rhs[i] = -rho*du[i];
+  }
   return rhs;
 }
 
