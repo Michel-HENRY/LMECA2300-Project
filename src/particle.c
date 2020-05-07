@@ -264,3 +264,14 @@ void set_density(Particle** particles, int nx, int ny, double rho0, double B, do
     }
   }
 }
+void update_pressure(Particle** p, int n_p, double rho_0, double B, double gamma){
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    double rho = pi->fields->rho;
+    // double qrho = fmax(rho/rho_0, 1);
+    double qrho = rho/rho_0;
+    double Pdyn = B*(pow(qrho,gamma) - 1);
+
+    pi->fields->P = Pdyn;
+  }
+}

@@ -23,7 +23,7 @@ void Edges_free(Edges* edges){
 }
 
 Vector** set_normal(Edges* edges){
-  Vector** n = malloc(sizeof(Vector**)*edges->n_e);
+  Vector** n = malloc(sizeof(Vector*)*edges->n_e);
   for(int i = 0; i < edges->n_e; i ++){
 
     Vector* e0 = edges->edge[2*i];
@@ -137,6 +137,7 @@ static void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, in
 
 static void update_velocity(Particle* p, Edges* edges, int index){
 
+  double ut_condition = 5;
   Vector* n = edges->n[index];
   Vector* t = Vector_new(p->fields->u->DIM);
   t->X[0] = -n->X[1]; t->X[1] = n->X[0];
@@ -149,7 +150,8 @@ static void update_velocity(Particle* p, Edges* edges, int index){
   double ut = dot(u,t)*(1-CF);
 
   for(int i = 0; i < u->DIM; i++){
-    u->X[i] = -un*n->X[i] + ut* t->X[i];
+    // u->X[i] = -un*n->X[i] + ut* t->X[i];
+    u->X[i] = -un*n->X[i] + ut_condition* t->X[i];
     // printf("u_corr[%d] = %f\n",i, u->X[i]);
   }
   Vector_free(t);
@@ -175,7 +177,41 @@ void reflective_boundary(Particle** p, int n_p, Edges* edges){
 
       free(dist_edges);
       counter++;
-      if(counter > 101){break;}
+      if(counter > edges->n_e){break;}
     }
   }
+}
+Edges* EdgesCircle(int n_e, double R, double CR, double CF){
+  Edges* edges = (Edges*)malloc(sizeof(Edges));
+  double* t = (double*)malloc(sizeof(double)*n_e);
+  for(int i = 0; i < n_e; i++){
+    t[i] = i*2*M_PI/n_e;        // Angle en radian
+  }
+  double* x = (double*)malloc(sizeof(double)*n_e);
+  double* y = (double*)malloc(sizeof(double)*n_e);
+  for(int i = 0; i < n_e; i++){
+    x[i] = R*cos(t[i]);
+    y[i] = R*sin(t[i]);
+    // printf("x = %f, y = %f\n",x[i],y[i]);
+  }
+
+  Vector** edge = (Vector**)malloc(sizeof(Vector*)*2*n_e);
+  for(int i = 0; i < n_e;i++){
+    edge[2*i] = Vector_new(2);                edge[2*i+1] = Vector_new(2);
+    edge[2*i]->X[0]   = x[i];                 edge[2*i]->X[1]   = y[i];
+    edge[2*i+1]->X[0] = x[(i+1)%n_e];         edge[2*i+1]->X[1] = y[(i+1)%n_e];
+    // Vector_print(edge[2*i]);
+    // Vector_print(edge[2*i+1]);
+  }
+  edges->n_e = n_e;
+  edges->edge = edge;
+  edges->n = set_normal(edges);
+  edges->CR = CR;
+  edges->CF = CF;
+
+  free(t);
+  free(x);
+  free(y);
+
+  return edges;
 }

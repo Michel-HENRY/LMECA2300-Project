@@ -96,4 +96,5 @@ void Particles_free(Particle** particles, int n_p);
 static void reset_particles(Particle** particles, int N, int iter);
 int get_n_neighbors(Particle* p);
 void set_density(Particle** particles, int nx, int ny, double rho0, double B, double gamma);
+void update_pressure(Particle** p, int n_p, double rho_0, double B, double gamma);
 #endif

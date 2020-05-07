@@ -43,7 +43,7 @@ static double u_min(Particle** p, int n_p){
 }
 
 
-Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double domain[4]){
+Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, Vector** edges, int n_e){
   Animation* animation = (Animation*) malloc(sizeof(Animation));
 
   animation->timeout = timeout;
@@ -55,19 +55,20 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, double 
 
   GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
   animation->bov_particles = bov_particles_new(data, n_p, GL_DYNAMIC_DRAW);
-  bov_points_set_pos(animation->bov_particles, (GLfloat[2]){-0.2,-0.2});
+  // bov_points_set_pos(animation->bov_particles, (GLfloat[2]){-0.2,-0.2});
   bov_points_set_width(animation->bov_particles, R_p);
 
   free(data);
 
-  animation->domain = load_Domain(domain);
-  bov_points_set_pos(animation->domain, (GLfloat[2]){-0.2,-0.2});
+  animation->n_e = n_e;
+  animation->domain = load_Domain(edges, n_e);
+  // bov_points_set_pos(animation->domain, (GLfloat[2]){-0.2,-0.2});
   bov_points_set_width(animation->domain, 0.001);
   bov_points_set_color(animation->domain,(GLfloat[]){1.0, 0.0, 0.0, 1.0});
 
   if (grid != NULL){
     animation->grid = load_Grid(grid);
-    bov_points_set_pos(animation->grid, (GLfloat[2]){-0.2,-0.2});
+    // bov_points_set_pos(animation->grid, (GLfloat[2]){-0.2,-0.2});
   }
 	else{
     animation->grid = NULL;
@@ -86,16 +87,23 @@ void Animation_free(Animation* animation){
 	bov_window_delete(animation->window);
 	free(animation);
 }
-bov_points_t* load_Domain(double domain[4]){
+bov_points_t* load_Domain(Vector** edges, int n_e){
   // domain = [left, right, bottom, top]
-  GLfloat(*data)[2] = malloc(sizeof(data[0])*4);
-  data[0][0] = domain[0];   data[1][0] = domain[1];
-  data[0][1] = domain[2];   data[1][1] = domain[2];
+  GLfloat(*data)[2] = malloc(sizeof(data[0])*n_e);
 
-  data[3][0] = domain[0];   data[2][0] = domain[1];
-  data[3][1] = domain[3];   data[2][1] = domain[3];
+  for(int i = 0 ; i < n_e;i ++){
+    data[i][0] = edges[2*i]->X[0];
+    data[i][1] = edges[2*i]->X[1];
+    // printf("noeud %d :\t (%f,%f)\n", i, data[i][0], data[i][1]);
+  }
 
-  bov_points_t *points = bov_points_new(data, 4, GL_STATIC_DRAW);
+  // data[0][0] = domain[0];   data[1][0] = domain[1];
+  // data[0][1] = domain[2];   data[1][1] = domain[2];
+  //
+  // data[3][0] = domain[0];   data[2][0] = domain[1];
+  // data[3][1] = domain[3];   data[2][1] = domain[3];
+
+  bov_points_t *points = bov_points_new(data, n_e, GL_STATIC_DRAW);
   free(data);
 	return points;
 }
@@ -160,18 +168,18 @@ static void fillData(GLfloat (*data)[8], Particle** particles, int n_p){
     double P = p->fields->P;
     double u = sqrt(pow(p->fields->u->X[0],2) + pow(p->fields->u->X[1],2));
     double field;
-    if(Pmax == Pmin){
-      field = 0.0;
-    }
-    else{
-      field = (P - Pmin)/(Pmax - Pmin);
-    }
-    // if(umax == umin){
+    // if(Pmax == Pmin){
     //   field = 0.0;
     // }
     // else{
-    //   field = (u - umin)/(umax - umin);
+    //   field = (P - Pmin)/(Pmax - Pmin);
     // }
+    if(umax == umin){
+      field = 0.0;
+    }
+    else{
+      field = (u - umin)/(umax - umin);
+    }
 
 		colormap(field, &data[i][4]); // fill color
     // colormap(p->fields->Cs, &data[i][4]);
