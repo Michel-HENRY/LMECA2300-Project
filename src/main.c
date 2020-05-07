@@ -185,6 +185,7 @@ static int moving_circle(){
     show(p,animation,i,false,false);
     i++;
     t += dt;
+    break;
   }
   show(p, animation, 0, true,true);
 

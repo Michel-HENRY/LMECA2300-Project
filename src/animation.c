@@ -145,7 +145,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
   free(data);
 
   // --------------------------- SCREENSHOT ------------------------------------
-  char screenshot_name[64] = "dam_break_";
+  char screenshot_name[64] = "moving_circle_";
 	char int_string[32];
 	sprintf(int_string, "%d", iter);
 	strcat(screenshot_name, int_string);

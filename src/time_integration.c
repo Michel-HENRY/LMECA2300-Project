@@ -230,12 +230,10 @@ void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
       }
       node = node->next;
     }
-    // printf("corr = \n");
-    // Vector_print(corr);
     for(int d = 0; d < ui->DIM; d++){
       ui->X[d] += eta*corr->X[d];
     }
-
+    Vector_free(corr);
   }
 }
 
