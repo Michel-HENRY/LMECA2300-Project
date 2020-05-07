@@ -136,8 +136,6 @@ static void update_mass_center(Vector* C1, double Rp, Edges* edges, double d, in
 }
 
 static void update_velocity(Particle* p, Edges* edges, int index){
-
-  double ut_condition = 5;
   Vector* n = edges->n[index];
   Vector* t = Vector_new(p->fields->u->DIM);
   t->X[0] = -n->X[1]; t->X[1] = n->X[0];
@@ -150,8 +148,12 @@ static void update_velocity(Particle* p, Edges* edges, int index){
   double ut = dot(u,t)*(1-CF);
 
   for(int i = 0; i < u->DIM; i++){
-    // u->X[i] = -un*n->X[i] + ut* t->X[i];
-    u->X[i] = -un*n->X[i] + ut_condition* t->X[i];
+    if(DIRICHLET){
+      u->X[i] = -un*n->X[i] + DIRICHLET_VALUE * t->X[i];
+    }
+    else{
+      u->X[i] = -un*n->X[i] + ut* t->X[i];
+    }
     // printf("u_corr[%d] = %f\n",i, u->X[i]);
   }
   Vector_free(t);

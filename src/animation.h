@@ -10,6 +10,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
+
 typedef struct Animation Animation;
 
 struct Animation {

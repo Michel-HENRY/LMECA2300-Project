@@ -8,6 +8,8 @@
 // TODO : Utiliser des listes pour pop les frontières qui ont déjà été validées.
 typedef struct Edges Edges;
 #define M_PI 3.14159265358979323846
+#define DIRICHLET 1
+#define DIRICHLET_VALUE 5
 
 struct Edges {
   int n_e;        // Taille de edges

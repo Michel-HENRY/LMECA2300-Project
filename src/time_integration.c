@@ -1,144 +1,35 @@
 #include "time_integration.h"
 
 // ------------------------------------------------------------------
-// ------------------------ Print functions -------------------------
+// ------------------------ Compute fields ---- ---------------------
 // ------------------------------------------------------------------
-
-static void print_vMax(Particle** p, int n_p){
-  double max_y = 0;
-
+void density(Particle** p, int n_p, Kernel kernel){
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    double rho = 0;
+    ListNode* current = pi->neighbors->head;
+    while (current != NULL) {
+      Particle* pj = current->v;
+      double W = eval_kernel(pi->fields->x,pj->fields->x, pi->param->h, kernel);
+      rho += pj->param->mass*W;
+      current = current->next;
+    }
+    pi->fields->rho = rho;
+  }
+}
+void get_dP(Particle** p, int n_p, Kernel kernel){
   for(int i = 0; i < n_p; i++){
-    double v = fabs(p[i]->fields->u->X[1]);
-    if(max_y < v){
-			max_y = v;
-		}
+    Vector_free(p[i]->fields->dP);
+    p[i]->fields->dP = grad_P(p[i], kernel);
   }
-  printf("Max Velocity = %f\n", max_y);
-}
-void print_rhoMax(Particle** p, int n_p){
-  double max_y = p[0]->fields->rho;
-
-  for(int i = 1; i < n_p; i++){
-    double v = p[i]->fields->rho;
-    if(max_y < v){
-			max_y = v;
-		}
-  }
-  printf("Max Density = %f\n", max_y);
-}
-void print_rhoMin(Particle** p, int n_p){
-  double min_y = p[0]->fields->rho;
-
-  for(int i = 1; i < n_p; i++){
-    double v = p[i]->fields->rho;
-    if(min_y > v){
-			min_y = v;
-		}
-  }
-  printf("Min Density = %f\n", min_y);
-}
-void print_Pmax(Particle** p, int n_p){
-  double max_y = p[0]->fields->P;
-
-  for(int i = 1; i < n_p; i++){
-    double v = p[i]->fields->P;
-    if(max_y < v){
-			max_y = v;
-		}
-  }
-  printf("Max Pressure = %f\n", max_y);
-}
-void print_Pmin(Particle** p, int n_p){
-  double min_y = p[0]->fields->P;
-
-  for(int i = 1; i < n_p; i++){
-    double v = p[i]->fields->P;
-    if(min_y > v){
-			min_y = v;
-		}
-  }
-  printf("Min Pressure = %f\n", min_y);
-}
-void print_dPminmax(Vector** dP, int n_p){
-  double mindPx = dP[0]->X[0];    double mindPy = dP[0]->X[1];
-  double maxdPx = dP[0]->X[0];    double maxdPy = dP[0]->X[1];
-
-  for(int i = 1 ; i  < n_p; i++){
-    if(dP[i]->X[0] > maxdPx){
-      maxdPx = dP[i]->X[0];
-    }
-    if(dP[i]->X[1] > maxdPy){
-      maxdPy = dP[i]->X[1];
-    }
-    if(dP[i]->X[0] < mindPx){
-      mindPx = dP[i]->X[0];
-    }
-    if(dP[i]->X[1] < mindPy){
-      mindPy = dP[i]->X[1];
-    }
-  }
-  printf("\tMin\t\tMax\ndPx :\t %f\t\t%f\ndPy :\t %f\t\t%f\n",mindPx, maxdPx, mindPy, maxdPy);
-}
-static void print_momentumMax(Vector** momentum,  int n_p){
-  double max_y = 0;
-  double max_x = 0;
-  for(int i = 0; i < n_p; i++){
-    double qm_Y = fabs(momentum[i]->X[1]);
-    double qm_X = fabs(momentum[i]->X[0]);
-    printf("momentum ? %f %f\n",momentum[i]->X[0], momentum[i]->X[1]);
-    if (max_y < qm_Y){
-      max_y = qm_Y;
-    }
-    if (max_x < qm_X){
-      max_x = qm_X;
-    }
-  }
-  printf("Max Momentum = %f, %f\n", max_x, max_y);
 }
 
-void print_dP(Particle**p, int n_p,Kernel kernel){
-  Vector** dP = get_dP(p,n_p,kernel);
-  for(int i = 0; i < n_p; i++){
-    printf("dPx[%d] = %f\t",i,dP[i]->X[0]/p[i]->fields->rho);
-    printf("dPy[%d] = %f\n",i,dP[i]->X[1]/p[i]->fields->rho);
-    free(dP[i]);
-  }
-  free(dP);
-}
+
 // ------------------------------------------------------------------
 // ------------------------ Compute all the rhs ---------------------
 // ------------------------------------------------------------------
 
-void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
-  for(int i = 0; i < n_p; i++){
-    Particle* pi = p[i];
-    Vector* ui = pi->fields->u;
-    Vector* corr = Vector_new(ui->DIM);
-    ListNode* node = pi->neighbors->head;
-    while(node != NULL){
-      Particle* pj = node->v;
-      Vector* uj = pj->fields->u;
-      double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h,kernel);
-      // printf("W = %f\n", W);
-      double mj = pj->param->mass;
-      double rhoi = pi->fields->rho;
-      double rhoj = pj->fields->rho;
-
-      for(int d = 0; d < ui->DIM; d++){
-        corr->X[d] += (2*mj)/(rhoi + rhoj)*(uj->X[d] - ui->X[d])*W;
-      }
-      node = node->next;
-    }
-    // printf("corr = \n");
-    // Vector_print(corr);
-    for(int d = 0; d < ui->DIM; d++){
-      ui->X[d] += eta*corr->X[d];
-    }
-
-  }
-}
-
-
+// Mass term
 double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
   double* rhs = (double*) malloc(sizeof(double)*n_p);
   double check = 0;
@@ -153,7 +44,6 @@ double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
   printf("SUM du = %f\n", check);
   return rhs;
 }
-
 double* CSPM_rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
   double* rhs = (double*) malloc(sizeof(double)*n_p);
   double* du = CSPM_div(p,n_p,kernel);
@@ -166,37 +56,29 @@ double* CSPM_rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
   free(du);
   return rhs;
 }
-
+// Momentum term
 Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel){
   Vector** rhs = (Vector**) malloc(sizeof(Vector*)*n_p);
-  Vector** dP = get_dP(p,n_p,kernel);
-  // print_dPminmax(dP,n_p);
+  get_dP(p,n_p,kernel);
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
 
     // External forces
     Vector* f = pi->fields->f;
-    // Vector_print(f);
-    // Vector_print(dP[i]);
+    // Pressure Gradient
+    Vector* dP = pi->fields->dP;
     rhs[i] = Vector_new(2);
     for(int d = 0; d < 2; d++){
-      rhs[i]->X[d] = (-dP[i]->X[d] + f->X[d])/rho;
+      rhs[i]->X[d] = (-dP->X[d] + f->X[d])/rho;
     }
-   Vector_free(dP[i]);
   }
-  free(dP);
   return rhs;
 }
 
-Vector** get_dP(Particle** p, int n_p, Kernel kernel){
-  Vector** dP = (Vector**) malloc(sizeof(Vector*) * n_p);
-  for(int i = 0; i < n_p; i++){
-    dP[i] = grad_P(p[i], kernel);
-  }
-  return dP;
-}
-
+// ------------------------------------------------------------------
+// ---------------------- Available correction ----------------------
+// ------------------------------------------------------------------
 double* CSPM_div(Particle** p, int n_p, Kernel kernel){
   double* dU = (double*) malloc(sizeof(double)*n_p);
   for(int i = 0;i < n_p;++i){
@@ -328,10 +210,39 @@ void CSPM_pressure(Particle** p, int n_p, Kernel kernel, Vector** dP){
   }
   free(dP_CSPM);
 }
+void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta){
+  for(int i = 0; i < n_p; i++){
+    Particle* pi = p[i];
+    Vector* ui = pi->fields->u;
+    Vector* corr = Vector_new(ui->DIM);
+    ListNode* node = pi->neighbors->head;
+    while(node != NULL){
+      Particle* pj = node->v;
+      Vector* uj = pj->fields->u;
+      double W = eval_kernel(pi->fields->x, pj->fields->x, pi->param->h,kernel);
+      // printf("W = %f\n", W);
+      double mj = pj->param->mass;
+      double rhoi = pi->fields->rho;
+      double rhoj = pj->fields->rho;
+
+      for(int d = 0; d < ui->DIM; d++){
+        corr->X[d] += (2*mj)/(rhoi + rhoj)*(uj->X[d] - ui->X[d])*W;
+      }
+      node = node->next;
+    }
+    // printf("corr = \n");
+    // Vector_print(corr);
+    for(int d = 0; d < ui->DIM; d++){
+      ui->X[d] += eta*corr->X[d];
+    }
+
+  }
+}
+
+
 // ------------------------------------------------------------------
 // ------------------- Solve the material derivatives ---------------
 // ------------------------------------------------------------------
-
 void time_integration_mass(Particle** p, int n_p,double* rhs_mass,double dt){
   for(int i = 0; i < n_p; i++){
     Particle* pi = p[i];
@@ -355,36 +266,17 @@ void time_integration_position(Particle** p, int n_p, double dt){
     Vector_free(update);
   }
 }
-void density(Particle** p, int n_p, Kernel kernel){
-  for(int i = 0; i < n_p ; i++){
-    Particle* pi = p[i];
-    double rho = 0;
-    ListNode* current = pi->neighbors->head;
-    while (current != NULL) {
-      Particle* pj = current->v;
-      double W = eval_kernel(pi->fields->x,pj->fields->x, pi->param->h, kernel);
-      rho += pj->param->mass*W;
-      current = current->next;
-    }
-    pi->fields->rho = rho;
-  }
-}
 
-
-
-
+// ------------------------------------------------------------------
+// --------------------- Time integration scheme ---- ---------------
+// ------------------------------------------------------------------
 void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
-  // print_dP(p,n_p,kernel);
-  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
   Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
 
   time_integration_momentum(p,n_p,rhs_momentum,dt);
-  XSPH_correction(p,n_p,kernel,0.5);
 
   time_integration_position(p,n_p,dt);
   reflective_boundary(p, n_p, edges);
-
-  // time_integration_mass(p,n_p,rhs_mass,dt);
 
   print_rhoMax(p,n_p);
   print_rhoMin(p,n_p);
@@ -399,48 +291,128 @@ void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* ed
   }
   free(rhs_momentum);
 }
-void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges){
-
-  // density(p,n_p, kernel);
-
-  // print_dP(p,n_p,kernel);
-  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
-  Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
-
-  time_integration_momentum(p,n_p,rhs_momentum,dt);
-  time_integration_position(p,n_p,dt);
-  reflective_boundary(p, n_p, edges);
-
-  time_integration_mass(p,n_p,rhs_mass,dt);
-
-  print_rhoMax(p,n_p);
-  print_rhoMin(p,n_p);
-
-  print_Pmax(p,n_p);
-  print_Pmin(p,n_p);
-
-  print_vMax(p,n_p);
-
-  for(int i = 0; i < n_p; i++){
-    Vector_free(rhs_momentum[i]);
-  }
-  free(rhs_momentum);
-}
-
 void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta){
   Vector** rhs_momentum = rhs_momentum_conservation(p,n_p,kernel);
-  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
-  time_integration_mass(p,n_p,rhs_mass,dt);
-  time_integration_momentum(p,n_p,rhs_momentum,dt);
 
-  XSPH_correction(p, n_p, kernel, eta);
+  time_integration_momentum(p,n_p,rhs_momentum,dt);
+  XSPH_correction(p,n_p,kernel,eta);
 
   time_integration_position(p,n_p,dt);
   reflective_boundary(p, n_p, edges);
+
+  print_rhoMax(p,n_p);
+  print_rhoMin(p,n_p);
+
+  print_Pmax(p,n_p);
+  print_Pmin(p,n_p);
+
+  print_vMax(p,n_p);
 
   for(int i = 0; i < n_p; i++){
     Vector_free(rhs_momentum[i]);
   }
   free(rhs_momentum);
-  free(rhs_mass);
+}
+
+
+// ------------------------------------------------------------------
+// ------------------------ Print functions -------------------------
+// ------------------------------------------------------------------
+void print_vMax(Particle** p, int n_p){
+  double max_y = 0;
+
+  for(int i = 0; i < n_p; i++){
+    double v = fabs(p[i]->fields->u->X[1]);
+    if(max_y < v){
+      max_y = v;
+    }
+  }
+  printf("Max Velocity = %f\n", max_y);
+}
+void print_rhoMax(Particle** p, int n_p){
+  double max_y = p[0]->fields->rho;
+
+  for(int i = 1; i < n_p; i++){
+    double v = p[i]->fields->rho;
+    if(max_y < v){
+      max_y = v;
+    }
+  }
+  printf("Max Density = %f\n", max_y);
+}
+void print_rhoMin(Particle** p, int n_p){
+  double min_y = p[0]->fields->rho;
+
+  for(int i = 1; i < n_p; i++){
+    double v = p[i]->fields->rho;
+    if(min_y > v){
+      min_y = v;
+    }
+  }
+  printf("Min Density = %f\n", min_y);
+}
+void print_Pmax(Particle** p, int n_p){
+  double max_y = p[0]->fields->P;
+
+  for(int i = 1; i < n_p; i++){
+    double v = p[i]->fields->P;
+    if(max_y < v){
+      max_y = v;
+    }
+  }
+  printf("Max Pressure = %f\n", max_y);
+}
+void print_Pmin(Particle** p, int n_p){
+  double min_y = p[0]->fields->P;
+
+  for(int i = 1; i < n_p; i++){
+    double v = p[i]->fields->P;
+    if(min_y > v){
+      min_y = v;
+    }
+  }
+  printf("Min Pressure = %f\n", min_y);
+}
+void print_dPminmax(Vector** dP, int n_p){
+  double mindPx = dP[0]->X[0];    double mindPy = dP[0]->X[1];
+  double maxdPx = dP[0]->X[0];    double maxdPy = dP[0]->X[1];
+
+  for(int i = 1 ; i  < n_p; i++){
+    if(dP[i]->X[0] > maxdPx){
+      maxdPx = dP[i]->X[0];
+    }
+    if(dP[i]->X[1] > maxdPy){
+      maxdPy = dP[i]->X[1];
+    }
+    if(dP[i]->X[0] < mindPx){
+      mindPx = dP[i]->X[0];
+    }
+    if(dP[i]->X[1] < mindPy){
+      mindPy = dP[i]->X[1];
+    }
+  }
+  printf("\tMin\t\tMax\ndPx :\t %f\t\t%f\ndPy :\t %f\t\t%f\n",mindPx, maxdPx, mindPy, maxdPy);
+}
+void print_momentumMax(Vector** momentum,  int n_p){
+  double max_y = 0;
+  double max_x = 0;
+  for(int i = 0; i < n_p; i++){
+    double qm_Y = fabs(momentum[i]->X[1]);
+    double qm_X = fabs(momentum[i]->X[0]);
+    printf("momentum ? %f %f\n",momentum[i]->X[0], momentum[i]->X[1]);
+    if (max_y < qm_Y){
+      max_y = qm_Y;
+    }
+    if (max_x < qm_X){
+      max_x = qm_X;
+    }
+  }
+  printf("Max Momentum = %f, %f\n", max_x, max_y);
+}
+void print_dP(Particle**p, int n_p,Kernel kernel){
+  for(int i = 0; i < n_p; i++){
+    Vector* dP = p[i]->fields->dP;
+    printf("dPx[%d] = %f\t",i,dP->X[0]/p[i]->fields->rho);
+    printf("dPy[%d] = %f\n",i,dP->X[1]/p[i]->fields->rho);
+  }
 }
