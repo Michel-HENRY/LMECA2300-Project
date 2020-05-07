@@ -118,8 +118,8 @@ void update_pressure(Particle** p, int n_p, double rho_0, double B, double gamma
   for(int i = 0; i < n_p ; i++){
     Particle* pi = p[i];
     double rho = pi->fields->rho;
-    double qrho = fmax(rho/rho_0, 1);
-    // double qrho = rho/rho_0;
+    // double qrho = fmax(rho/rho_0, 1);
+    double qrho = rho/rho_0;
     double Pdyn = B*(pow(qrho,gamma) - 1);
 
     pi->fields->P = Pdyn;
@@ -206,7 +206,6 @@ double* CSPM_rhs_mass_conservation(Particle** p, int n_p, Kernel kernel){
     double rho = pi->fields->rho;
     // printf("div u = %f\n", du);
     rhs[i] = -rho*du[i];
-  }
   return rhs;
 }
 
@@ -605,9 +604,10 @@ void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edge
     i = 0;
     first = false;
   }
-  double* rhs_mass = CSPM_rhs_mass_conservation(p,n_p,kernel);
-  // density(p,n_p,kernel);
   // if ((i+1)%30 == 0) CSPM_density(p,n_p, kernel);
+
+  // double* rhs_mass = CSPM_rhs_mass_conservation(p,n_p,kernel);
+  double* rhs_mass = rhs_mass_conservation(p,n_p,kernel);
   Vector** rhs_momentum = CSPM_rhs_momentum_conservation(p,n_p,kernel);
 
   time_integration_momentum(p,n_p,rhs_momentum,dt);

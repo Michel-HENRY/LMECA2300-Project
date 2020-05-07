@@ -23,9 +23,9 @@ Particle** fluidProblem(Parameters* param, int n_p_dim_x, int n_p_dim_y, double 
 Edges* get_box(double L, double H, int n_e , double CF, double CR, double domain[4]);
 
 int main(){
-  // dam_break();
+  dam_break();
   // boundary_validation();
-  SPH_operator_validation();
+  // SPH_operator_validation();
   // hydrostatic_eq();
   // waves();
 }
@@ -276,7 +276,7 @@ static int SPH_operator_validation(){
 
     printf("\n");
   }
-
+  free(div);
   printf("h = %f\t",h);
   printf("kh = %f\n", kh );
 
@@ -590,29 +590,9 @@ static int waves(){
     printf("-----------\t t/tEnd : %.3f/%.1f\t-----------\n", t,tEnd);
     update_cells(grid, particles, n_p);
     update_neighbors(grid, particles, n_p, i);
-
-    update_pressure(particles, n_p, rho_0, B,gamma);
-    // imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
-
-    double* rhs_mass = rhs_mass_conservation(particles,n_p,kernel);
-    time_integration_mass(particles,n_p,rhs_mass,dt);
-    free(rhs_mass);
-    if ((i+1)%30) CSPM_density(particles,n_p, kernel);
-
-    print_rhoMax(particles,n_p);
-    print_rhoMin(particles,n_p);
-
-    Vector** rhs_momentum = CSPM_rhs_momentum_conservation(particles,n_p,kernel);
-    time_integration_momentum(particles,n_p,rhs_momentum,dt);
-    for(int i = 0; i < n_p; i++)
-      Vector_free(rhs_momentum[i]);
-    free(rhs_momentum);
-
-    // XSPH_correction(p, n_p, kernel, eta);
-
-    time_integration_position(particles,n_p,dt);
-    reflective_boundary(particles, n_p, edges);
-
+    update_pressure(particles, n_p, rho_0, B, gamma);
+    imposeFScondition(particles, n_p_dim_x, n_p_dim_y);
+    time_integration_CSPM(particles, n_p, kernel, dt, edges,eta);
     show(particles, animation, i, false, false);
 
     printf("Time integration completed\n");
