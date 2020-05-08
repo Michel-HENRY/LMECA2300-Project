@@ -24,8 +24,40 @@ uniform sampler2D framebuffer;
 
 out vec4 outColor;
 
-void main()
-{
-	outColor = texture(framebuffer, gl_FragCoord.xy/resolution).rgba; // directly show frambuffer
+float min(float a, float b){
+	if(a < b){
+		return a;
+	} else {
+		return b;
+	}
+}
+
+float abs(float a){
+	if(a < 0){
+		return -a;
+	} else {
+		return a;
+	}
+}
+
+void main() {
+	//outColor = vec4((gl_FragCoord.xy/resolution).x, 0, 0, 1);//texture(framebuffer, gl_FragCoord.xy/resolution).rgba; // directly show frambuffer
+	vec4 col = texture(framebuffer, gl_FragCoord.xy/resolution).rgba;
+	vec3 fcol = texture(framebuffer, gl_FragCoord.xy/resolution).rgb;
+	float intensity = fcol.r/fcol.b;// + 0.5;
+	vec2 pos = gl_FragCoord.xy/resolution;
+	if(col.g != 0){//We are into a pression
+		float v1 = 3.5*(intensity-0.7);
+		float v2 = 1.25*intensity;
+		float v3 = min(0.5,intensity)*2.0;
+
+		col.r = 1.5 - 4.0 * abs(intensity - 0.75);
+		col.g = 1.5 - 4.0 * abs(intensity - 0.5 );
+		col.b = 1.5 - 4.0 * abs(intensity - 0.25);
+		col.a = 1;
+	} else if(col.b != 0){
+		col.r = 0; col.b = 0; col.g = 0;
+	}
+	outColor = col;
 }
 

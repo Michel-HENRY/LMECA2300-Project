@@ -25,18 +25,15 @@ flat in vec2 speedGeom;
 flat in vec4 dataGeom;
 flat in float pixelSize; // = 2.0 / (min(resolution.x, resolution.y) * zoom)
 
+uniform sampler2D textu;
+
 out vec4 outColor;
 
-void main()
-{
+void main() {
 	float sdf = length(posGeom) - width;
 	vec2 alpha = smoothstep(-pixelSize, pixelSize, -sdf - vec2(0.0f, outlineWidth));
 	float distToCenter = 1-(length(abs(localPos-posGeom))/width);
-	//outColor = vec4(distToCenter, 0, 0, 1);
-	//outColor = dataGeom*distToCenter*2;
-	//outColor = distToCenter*alpha.y;
 	vec4 m = mix(outlineColor, dataGeom, alpha.y);
-	//outColor = m;
 	vec3 col = vec3(m.r, m.g, m.b);
 	col = col/length(col);
 	col = col/length(col);
@@ -64,7 +61,6 @@ void main()
 			outColor.a = 0;
 		}*/
 		outColor.a *= alpha.x;
-
 	} else if(speedGeom.x == -2000){//Shadow particles
 		outColor = m;
 		outColor.a = 1;
@@ -72,6 +68,12 @@ void main()
 	} else if(speedGeom.x == -3000){
 		if(distToCenter < 0.75)
 			outColor.a = 0;
+	} else if(speedGeom.x >= 4000){//Continious field
+		outColor.r = distToCenter*(speedGeom.x - 4000);
+		outColor.g = 1;//1 - speedGeom.x + 4000;///////////Mettre le bleu evidemment
+		outColor.b = distToCenter;//1 - speedGeom.x + 4000;
+		outColor.a = 0.2;//((distToCenter*distToCenter));/////////////ca ne va pas
+		outColor.a *= alpha.x;
 	} else {
 		/*
 		float distToLight = 1 - length(posGeom + width/2)/width;//- length(abs(localPos + width/2)/2) + 0.5;

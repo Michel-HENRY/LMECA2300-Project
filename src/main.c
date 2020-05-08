@@ -306,7 +306,7 @@ static int SPH_operator_validation(){
 static int dam_break(){
   double lx = 0.114;                          // Longueur du domaine de particule
   double ly = 0.228;                          // Hauteur du domaine de particle
-  int n_p_dim = 20;
+  int n_p_dim = 5;
 
   // Parameters
   double rho_0 = 1e3;                     // Densité initiale
