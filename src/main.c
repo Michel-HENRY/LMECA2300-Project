@@ -14,7 +14,7 @@ Kernel kernel = Cubic;
 #define M_PI 3.14159265358979323846
 int ListToTxt (double* X, int n){
     FILE* fichier=NULL;
-    fichier = fopen("results/test.txt","r+");
+    fichier = fopen("results.csv","a");
     if (fichier != NULL)
         {
             for (int i=0;i<n;i++){
@@ -29,6 +29,20 @@ int ListToTxt (double* X, int n){
     }
 }
 
+void ParticleToTxt(Particle** p, int n_p, int iter){
+  FILE* fichier = NULL;
+  fichier = fopen("results.csv","w");
+  if(fichier != NULL){
+    for(int i = 0; i < n_p ; i++){
+      fprintf(fichier, "%d,\t%f,\t %f,\t%f,\t%f\n", iter,p[i]->fields->x->X[0],p[i]->fields->x->X[1] ,p[i]->fields->u->X[0], p[i]->fields->u->X[1]);
+    }
+    fclose(fichier);
+    printf("Ecriture réussie\n");
+  }
+  else{
+    printf("Impoosible d'ouvrir le fichier\n");
+  }
+}
 // Validation function
 
 static int moving_circle();
@@ -127,8 +141,8 @@ static int moving_circle(){
   Parameters* param = Parameters_new(mass,kh,Rp);
 
   // Domain
-  int ne = 100;
-  double CR = 1;
+  int ne = 200;
+  double CR = 0;
   double CF = 0;
   Edges* boundary = EdgesCircle(ne,R,CR,CF);
 
@@ -182,10 +196,10 @@ static int moving_circle(){
     CSPM_density(p,np,kernel);
     state_pressure(p,np,rho0,B,gamma);
     time_integration_XSPH(p,np,kernel,dt,boundary,eta);
+    ParticleToTxt(p,np,i);
     show(p,animation,i,false,false);
     i++;
     t += dt;
-    //break;
   }
   show(p, animation, 0, true,true);
 
