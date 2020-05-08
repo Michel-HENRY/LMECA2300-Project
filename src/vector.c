@@ -109,7 +109,6 @@ double dist(Vector* v1, Vector* v2){
   Vector* v3 = diff(v1,v2);
   double dist = norm(v3);
   Vector_free(v3);
-
   return dist;
 }
 bool equal(Vector* v1, Vector* v2){
@@ -126,7 +125,7 @@ Vector* times(Vector* v, double a){
 }
 void times_into(Vector* v, double a){
   for(int i = 0; i < v->DIM; i++){
-    v->X[i] *= a;
+    v->X[i] = a*v->X[i];
   }
 }
 Vector* prod(Vector* v1, Vector* v2){

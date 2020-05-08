@@ -22,7 +22,6 @@ struct Particle{
 
   Cell* cell;
   List* neighbors;
-  List* potential_neighbors; // If Verlet
 };
 
 struct Parameters{
@@ -30,18 +29,15 @@ struct Parameters{
   double dynamic_viscosity;
   double h;
   double Rp;
-  double tension;
   double treshold;
-  double P0;
-  double g;
 };
 
 struct Fields{
   Vector* x;
   Vector* u;
   Vector* f;
+  Vector* dP;
   double P;
-  double Cs;
   double rho;
 };
 
@@ -80,10 +76,11 @@ void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter);
 // -------------------------------------------------------------------
 // --------------------------- Parameters + fields--------------------
 // -------------------------------------------------------------------
-Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0, double g);
+Parameters* Parameters_new(double mass, double h, double Rp);
 void Parameters_free(Parameters* param);
 Fields* Fields_new(Vector* x, Vector* u, Vector* f, double P, double rho);
 void Fields_free(Fields* fields);
+void set_artificialViscosity(Parameters* param, double a, double b);
 
 // -------------------------------------------------------------------
 // ------------------------------ Particle ---------------------------
@@ -93,5 +90,6 @@ void Particle_free(Particle* particle);
 void Particles_free(Particle** particles, int n_p);
 static void reset_particles(Particle** particles, int N, int iter);
 int get_n_neighbors(Particle* p);
-
+void set_density(Particle** particles, int nx, int ny, double rho0, double B, double gamma);
+void state_pressure(Particle** p, int n_p, double rho_0, double B, double gamma);
 #endif

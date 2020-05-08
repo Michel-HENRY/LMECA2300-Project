@@ -6,31 +6,39 @@
 #include "SPH_operator.h"
 #include "kernel.h"
 #include "boundary.h"
-#include "free_surface.h"
 
-
-void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta);
-void time_integration_CSPM(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta);
-void time_integration_mass(Particle** p, int n_p,double* rhs_mass,double dt);
+// For initialisation
 void density(Particle** p, int n_p, Kernel kernel);
+void get_dP(Particle** p, int n_p, Kernel kernel);
+
+// Time integration scheme
+void time_integration(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges);
+void time_integration_XSPH(Particle** p, int n_p, Kernel kernel, double dt, Edges* edges, double eta);
+
+void time_integration_mass(Particle** p, int n_p,double* rhs_mass,double dt);
 void time_integration_momentum(Particle** p, int n_p, Vector** rhs_momentum,double dt);
 void time_integration_position(Particle** p, int n_p, double dt);
 
-void update_pressureMod(Particle** p, int n_p, double rho_0);
-void update_pressureEq(Particle** p, int n_p);
-void imposeFScondition(Particle** particles,int n_p_dim_x,int n_p_dim_y);
-void update_pressureHydro(Particle** particles, int n_p_dim_x, int n_p_dim_y, double rho_0);
 
-
-static double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel);
-static Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel);
-static Vector** CSPM_rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel);
+double* rhs_mass_conservation(Particle** p, int n_p, Kernel kernel);
+Vector** rhs_momentum_conservation(Particle** p, int n_p, Kernel kernel);
 
 // Correction Methods
-static void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta);
-static void CSPM_density(Particle** p, int n_p, Kernel kernel);
-Vector* CSPM_pressure(Particle* pi, Kernel kernel);
-static Vector* get_Pi_ij(Particle* pi, double a, double b, Kernel kernel);
-static void KGC(Particle* pi, Vector* dW);
+void XSPH_correction(Particle** p, int n_p, Kernel kernel, double eta);
+double* CSPM_div(Particle** p, int n_p, Kernel kernel);
+void CSPM_density(Particle** p, int n_p, Kernel kernel);
+void CSPM_pressure(Particle** p, int n_p, Kernel kernel, Vector** dP);
+
+
+
+// Available print functions
+void print_vMax(Particle** p, int n_p);
+void print_rhoMax(Particle** p, int n_p);
+void print_rhoMin(Particle** p, int n_p);
+void print_Pmax(Particle** p, int n_p);
+void print_Pmin(Particle** p, int n_p);
+void print_dPminmax(Vector** dP, int n_p);
+void print_momentumMax(Vector** momentum,  int n_p);
+void print_dP(Particle**p, int n_p,Kernel kernel);
 
 #endif

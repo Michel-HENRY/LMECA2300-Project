@@ -126,20 +126,7 @@ static void add_neighbors_from_cells(Grid* grid, Particle* p){
 		node = node->next;
 	}
 }
-// Among potential neighbors, filter the valid ones
-static void update_from_potential_neighbors(Particle** particles, int n_p, double h){
-	for (int i = 0; i < n_p; i++) {
-		Particle* p = particles[i];
-		ListNode *node = p->potential_neighbors->head;
-		while (node != NULL) {
-			Particle* q = (Particle*)node->v;
-			if(dist(p->fields->x,q->fields->x) <= h){
-        List_append(p->neighbors, q);
-      }
-			node = node->next;
-		}
-	}
-}
+
 void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter){
 	// Clean the particles before update
 	reset_particles(particles, n_p, iter);
@@ -155,16 +142,12 @@ void update_neighbors(Grid* grid, Particle** particles, int n_p, int iter){
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 
-Parameters* Parameters_new(double mass, double dynamic_viscosity, double h, double Rp, double tension, double treshold, double P0, double g){
+Parameters* Parameters_new(double mass, double h, double Rp){
   Parameters* param = (Parameters*) malloc(sizeof(Parameters));
   param->mass = mass;
-  param->dynamic_viscosity = dynamic_viscosity;
   param->h = h;
   param->Rp = Rp;
-  param->tension = tension;
-  param->treshold = treshold;
-  param->P0 = P0;
-	param->g = g;
+
   return param;
 }
 void Parameters_free(Parameters* param){
@@ -176,8 +159,8 @@ Fields* Fields_new(Vector* x, Vector* u, Vector* f, double P, double rho){
   fields->x = x;
   fields->u = u;
   fields->f = f;
+  fields->dP = Vector_new(x->DIM);
   fields->P = P;
-  fields->Cs = 1;
   fields->rho = rho;
 
   return fields;
@@ -186,6 +169,7 @@ void Fields_free(Fields* fields){
   Vector_free(fields->x);
   Vector_free(fields->u);
   Vector_free(fields->f);
+  Vector_free(fields->dP);
 
   free(fields);
 }
@@ -204,15 +188,12 @@ Particle* Particle_new(Parameters* param, Fields* fields){
   particle->fields = fields;
   particle->cell = NULL;
   particle->neighbors = List_new();
-  particle->potential_neighbors = List_new();
-
   return particle;
 }
 void Particle_free(Particle* particle){
   // Cell are freed in the GRID
   Fields_free(particle->fields);
   List_free(particle->neighbors,NULL);
-  List_free(particle->potential_neighbors,NULL);
 
   free(particle);
 }
@@ -240,4 +221,15 @@ int get_n_neighbors(Particle* p){
     n++;
   }
   return n;
+}
+void state_pressure(Particle** p, int n_p, double rho_0, double B, double gamma){
+  for(int i = 0; i < n_p ; i++){
+    Particle* pi = p[i];
+    double rho = pi->fields->rho;
+    // double qrho = fmax(rho/rho_0, 1);
+    double qrho = rho/rho_0;
+    double Pdyn = B*(pow(qrho,gamma) - 1);
+
+    pi->fields->P = Pdyn;
+  }
 }
