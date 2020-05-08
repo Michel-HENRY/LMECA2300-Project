@@ -25,6 +25,7 @@ struct Animation {
     bov_text_t* plot_none;
     bov_text_t* plot_density;
     bov_text_t* plot_pressure;
+    bov_text_t* plot_velocity;
     bov_text_t* plot_light;
     bov_text_t* plot_liquid;
     bov_points_t* shadow;

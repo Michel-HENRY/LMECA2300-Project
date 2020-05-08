@@ -49,11 +49,13 @@ void main() {
 		} else {
 			outColor.a = 0;
 		}
-	} else if(speedGeom.x == -1000) {//Plot de l'image
+		outColor.g = 0;
+	} else if(speedGeom.x == -1000) {//Fluid
 		outColor.a = 1;
-		//outColor.a = (distToCenter+0.5)*0.2 + 0.6;/////////Utiliser pour le fluide
+		//outColor.a = (distToCenter+0.5)*0.2 + 0.6;
 		if(distToCenter < 0.3)
 			outColor.a = 0;
+		outColor.g = 0;
 		/*
 		if(distToCenter > 0.5){
 			outColor.a = 0.8;
@@ -65,9 +67,6 @@ void main() {
 		outColor = m;
 		outColor.a = 1;
 		outColor.a *= alpha.x;		
-	} else if(speedGeom.x == -3000){
-		if(distToCenter < 0.75)
-			outColor.a = 0;
 	} else if(speedGeom.x >= 4000){//Continious field
 		outColor.r = distToCenter*(speedGeom.x - 4000);
 		outColor.g = 1;//1 - speedGeom.x + 4000;///////////Mettre le bleu evidemment
@@ -75,13 +74,7 @@ void main() {
 		outColor.a = 0.2;//((distToCenter*distToCenter));/////////////ca ne va pas
 		outColor.a *= alpha.x;
 	} else {
-		/*
-		float distToLight = 1 - length(posGeom + width/2)/width;//- length(abs(localPos + width/2)/2) + 0.5;
-		if(gl_Color.a == 0){
-			outColor.a = 0.5;
-		} else {
-			outColor.a = 1;
-		}*/
+		outColor.g = 0;
 		outColor.a = 1;
 		outColor.a *= alpha.x;
 	}

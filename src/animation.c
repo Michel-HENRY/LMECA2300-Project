@@ -118,6 +118,9 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, Vector*
 	animation->plot_density = bov_text_new((GLubyte[]) {
 		"Density\n"
 	}, GL_STATIC_DRAW);
+	animation->plot_velocity = bov_text_new((GLubyte[]) {
+		"Velocity\n"
+	}, GL_STATIC_DRAW);
 	animation->plot_light = bov_text_new((GLubyte[]) {
 		"Light\n"
 	}, GL_STATIC_DRAW);
@@ -125,13 +128,14 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, Vector*
 		"Liquid\n"
 	}, GL_STATIC_DRAW);
 	bov_text_set_space_type(animation->plot_none, PIXEL_SPACE);bov_text_set_space_type(animation->plot_pressure, PIXEL_SPACE);
-	bov_text_set_space_type(animation->plot_density, PIXEL_SPACE);
+	bov_text_set_space_type(animation->plot_density, PIXEL_SPACE);bov_text_set_space_type(animation->plot_velocity, PIXEL_SPACE);
 	bov_text_set_space_type(animation->plot_light, PIXEL_SPACE);bov_text_set_space_type(animation->plot_liquid, PIXEL_SPACE);
 	bov_text_set_fontsize(animation->plot_none, 16.0f);bov_text_set_fontsize(animation->plot_pressure, 16.0f);bov_text_set_fontsize(animation->plot_density, 16.0f);
-	bov_text_set_fontsize(animation->plot_light, 16.0f);bov_text_set_fontsize(animation->plot_liquid, 16.0f);
-	bov_text_set_pos(animation->plot_none, (GLfloat[2]){16.0f, 650.0f});
-	bov_text_set_pos(animation->plot_pressure, (GLfloat[2]){16.0f, 670.0f});
-	bov_text_set_pos(animation->plot_density, (GLfloat[2]){16.0f, 690.0f});
+	bov_text_set_fontsize(animation->plot_velocity, 16.0f);bov_text_set_fontsize(animation->plot_light, 16.0f);bov_text_set_fontsize(animation->plot_liquid, 16.0f);
+	bov_text_set_pos(animation->plot_none, (GLfloat[2]){16.0f, 630.0f});
+	bov_text_set_pos(animation->plot_pressure, (GLfloat[2]){16.0f, 650.0f});
+	bov_text_set_pos(animation->plot_density, (GLfloat[2]){16.0f, 670.0f});
+	bov_text_set_pos(animation->plot_velocity, (GLfloat[2]){16.0f, 690.0f});
 	bov_text_set_pos(animation->plot_light, (GLfloat[2]){16.0f, 710.0f});
 	bov_text_set_pos(animation->plot_liquid, (GLfloat[2]){16.0f, 730.0f});
 	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
@@ -145,6 +149,7 @@ void Animation_free(Animation* animation){
 	bov_points_delete(animation->shadow);
 	bov_points_delete(animation->light);
 	bov_text_delete(animation->plot_density);
+	bov_text_delete(animation->plot_velocity);
 	bov_text_delete(animation->plot_none);
 	bov_text_delete(animation->plot_pressure);
 	bov_text_delete(animation->plot_light);
@@ -218,6 +223,8 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 	double P_m = P_min(particles, n_p);
 	double r_M = rho_max(particles, n_p);
 	double r_m = rho_min(particles, n_p);
+	double u_M = u_max(particles, n_p);
+	double u_m = u_min(particles, n_p);
 	for(int i=0; i<n_p; i++) {
 		Particle* p = particles[i];
 	    data[i][0] = p->fields->x->X[0]; // x (rand between -100 and 100)
@@ -228,12 +235,12 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 	    data[i][5] = 0;
 	    data[i][6] = 0;
 	    // data[i][7] = 0;
-	    if(mask%5 == 4){
+	    if(mask%6 == 5){//Fluid
 	    	//Set the marker for the fluid
 	    	colormap(0.2, &data[i][4]);
 	    	data[i][2] = -1000;
 	    }
-	    if(mask%5 == 3){
+	    if(mask%6 == 4){//Shadow
 	    	//Shadow
 	    	//colormap(0.1, &data[i][4]);
 	    	data[i][4] = 0.035;
@@ -272,14 +279,24 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 		    data2[9*i + 8][1] = data2[9*i + 2][1];
 
 		    data[i][2] = -2000;
-	    } else if(mask%5 == 2)
-	      colormap((p->fields->rho-r_m)/(r_M-r_m), &data[i][4]); // fill colormap
-	  	else if(mask%5 == 1){
+		} else if(mask%6 == 3){
+		  colormap((p->fields->rho-r_m)/(r_M-r_m), &data[i][4]); // fill colormap//Useless --- to remove
+		  data[i][5] = 0;
+		  data[i][4] = 0;
+		  data[i][6] = 0;
+		  double u = sqrt(pow(p->fields->u->X[0],2) + pow(p->fields->u->X[1],2));
+		  data[i][2] = 4000 + ((u-u_m)/(u_M-u_m));	
+	    } else if(mask%6 == 2){
+	      colormap((p->fields->rho-r_m)/(r_M-r_m), &data[i][4]); // fill colormap//Useless --- to remove
+	      data[i][5] = 0;
+	      data[i][4] = 0;
+	      data[i][6] = 0;
+	      data[i][2] = 4000 + ((p->fields->rho-r_m)/(r_M-r_m));
+	  	} else if(mask%6 == 1){
 	      colormap((p->fields->P-P_m)/(P_M-P_m), &data[i][4]); // fill colormap
 	      data[i][5] = 0;
 	      data[i][4] = 0;
 	      data[i][6] = 0;
-	  	  //colormap(0.2, &data[i][4]); // fill colormap
 	      data[i][2] = 4000 + ((p->fields->P-P_m)/(P_M-P_m));
 	  	} else{
 	  	  colormap(0.2, &data[i][4]); // fill colormap
@@ -316,18 +333,22 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	bov_points_set_width(animation->bov_particles, particles[0]->param->Rp);
 	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_density, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
+	bov_text_set_color(animation->plot_velocity, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_pressure, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_light, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
-	if(nbr%5 == 4){
+	if(nbr%6 == 5){
 		bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
 		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*4);
-	}
-	else if(nbr%5 == 3)
+	} else if(nbr%6 == 4)
 		bov_text_set_color(animation->plot_light, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
-	else if(nbr%5 == 2)
+	else if(nbr%6 == 3){
+		bov_text_set_color(animation->plot_velocity, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
+		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*1.8);
+	} else if(nbr%6 == 2){
 		bov_text_set_color(animation->plot_density, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
-	else if(nbr%5 == 1){
+		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*1.8);
+	} else if(nbr%6 == 1){
 		bov_text_set_color(animation->plot_pressure, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
 		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*1.8);
 	} else
@@ -369,6 +390,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			bov_text_draw(window, animation->plot_none);
 			bov_text_draw(window, animation->plot_pressure);
 			bov_text_draw(window, animation->plot_density);
+			bov_text_draw(window, animation->plot_velocity);
 			bov_text_draw(window, animation->plot_light);
 			bov_text_draw(window, animation->plot_liquid);
 			if (iter%50 == 0) {
@@ -379,20 +401,21 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	} else {
     // we want to keep the window open with everything displayed
 		while (!bov_window_should_close(window)) {
-			if (animation->grid != NULL && grid)
-				bov_lines_draw(window, animation->grid, 0, BOV_TILL_END);
-			//bov_triangle_fan_draw(window, animation->domain, 0, BOV_TILL_END);
+			if(animation->grid != NULL && grid)
+				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
+			//bov_fast_triangle_fan_draw(window, animation->domain, 0, BOV_TILL_END);
 			if(nbr%5 == 3){
 				bov_particles_draw(window, animation->light, 0, BOV_TILL_END);
-				//bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
 			}
-			bov_particles_draw(window, animation->light, 0, BOV_TILL_END);
-			//bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
 			bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
+			if(nbr%5 == 3){
+				bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
+			}
 			bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
 			bov_text_draw(window, animation->plot_none);
 			bov_text_draw(window, animation->plot_pressure);
 			bov_text_draw(window, animation->plot_density);
+			bov_text_draw(window, animation->plot_velocity);
 			bov_text_draw(window, animation->plot_light);
 			bov_text_draw(window, animation->plot_liquid);
 			bov_window_screenshot(window, screenshot_name);
