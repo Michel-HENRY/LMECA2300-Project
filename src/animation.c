@@ -216,8 +216,8 @@ static void colormap(float v, float color[3]){
 }
 
 static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particles, int n_p, int mask){
-	double light_X = 2.0f;
-	double light_Y = 1.5f;
+	double light_X = 1.0f;
+	double light_Y = 1.0f;
 
 	double P_M = P_max(particles, n_p);
 	double P_m = P_min(particles, n_p);
@@ -359,7 +359,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	fillData(data, data2, particles, n_p, nbr);
 	bov_points_t* bov_particles = animation->bov_particles;
 	bov_particles = bov_particles_update(bov_particles, data,n_p);
-	if(nbr%5 == 3){
+	if(nbr%6 == 4){
 		bov_points_t* shadow = animation->shadow;
 		shadow = bov_points_update(shadow, data2, n_p*9);
 	}
@@ -379,11 +379,11 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			if(animation->grid != NULL && grid)
 				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
 			//bov_fast_triangle_fan_draw(window, animation->domain, 0, BOV_TILL_END);
-			if(nbr%5 == 3){
+			if(nbr%6 == 4){
 				bov_particles_draw(window, animation->light, 0, BOV_TILL_END);
 			}
 			bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
-			if(nbr%5 == 3){
+			if(nbr%6 == 4){
 				bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
 			}
 			bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);
@@ -404,11 +404,11 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			if(animation->grid != NULL && grid)
 				bov_lines_draw(window,animation->grid,0, BOV_TILL_END);
 			//bov_fast_triangle_fan_draw(window, animation->domain, 0, BOV_TILL_END);
-			if(nbr%5 == 3){
+			if(nbr%6 == 4){
 				bov_particles_draw(window, animation->light, 0, BOV_TILL_END);
 			}
 			bov_particles_draw(window, animation->bov_particles, 0, BOV_TILL_END);
-			if(nbr%5 == 3){
+			if(nbr%6 == 4){
 				bov_triangles_draw(window,animation->shadow, 0, BOV_TILL_END);
 			}
 			bov_line_loop_draw(window, animation->domain,0,BOV_TILL_END);

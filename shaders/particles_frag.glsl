@@ -65,6 +65,7 @@ void main() {
 		outColor.a *= alpha.x;
 	} else if(speedGeom.x == -2000){//Shadow particles
 		outColor = m;
+		outColor.g = 0;
 		outColor.a = 1;
 		outColor.a *= alpha.x;		
 	} else if(speedGeom.x >= 4000){//Continious field
