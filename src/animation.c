@@ -84,9 +84,9 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, Vector*
 
 	GLfloat(*data3)[8] = malloc(sizeof(data3[0]));
 	data3[0][0] = 2.0f; data3[0][1] = 1.5f;
-	data3[0][2] = 0; data3[0][3] = 0; 
+	data3[0][2] = 0; data3[0][3] = 0;
 	data3[0][4] = 0.98f; data3[0][5] = 0.87f;
-	data3[0][6] = 0.137f; data3[0][2] = 1; 
+	data3[0][6] = 0.137f; data3[0][2] = 1;
 	animation->light = bov_particles_new(data3, 1, GL_STATIC_DRAW);
 	bov_points_set_color(animation->light,(GLfloat[]){0.98f, 0.87f, 0.137f, 1.0});
 	bov_points_set_outline_color(animation->light, (GLfloat[]){0.98f, 0.87f, 0.137f, 1.0});
@@ -99,7 +99,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, Vector*
 	free(data3);
 	animation->n_e = n_e;
   	animation->domain = load_Domain(edges, n_e);
-	bov_points_set_width(animation->domain, 0.01);
+	bov_points_set_width(animation->domain, 0.025);
 	bov_points_set_color(animation->domain,(GLfloat[]){0.0f, 0.0f, 0.0f, 1.0});
 
 	if (grid != NULL){
@@ -254,7 +254,7 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 		    double dist = sqrt((x-light_X)*(x-light_X) + (y-light_Y)*(y-light_Y));
 		    double theta = atan((y-light_Y)/(x-light_X));
 		    double alpha = atan(p->param->Rp / dist);
-		    int mx = 1; 
+		    int mx = 1;
 		    if(light_X > x)
 		    	mx = -1;
 		    int my = 1;
@@ -286,19 +286,19 @@ static void fillData(GLfloat (*data)[8], GLfloat(*data2)[2], Particle** particle
 		  data[i][4] = 0;
 		  data[i][6] = 0;
 		  double u = sqrt(pow(p->fields->u->X[0],2) + pow(p->fields->u->X[1],2));
-		  data[i][2] = 4000 + ((u-u_m)/(u_M-u_m));	
+		  data[i][2] = 4000 + ((u-u_m)/(u_M-u_m));
 	    } else if(mask%6 == 2){
 	      colormap((p->fields->rho-r_m)/(r_M-r_m), &data[i][4]); // fill colormap//Useless --- to remove
 	      data[i][5] = 0;
 	      data[i][4] = 0;
 	      data[i][6] = 0;
-	      data[i][2] = 4000 + ((p->fields->rho-r_m)/(r_M-r_m));
+	      data[i][2] = 4000 + ((p->fields->rho-r_m)/(r_M-r_m+1e-5));
 	  	} else if(mask%6 == 1){
 	      colormap((p->fields->P-P_m)/(P_M-P_m), &data[i][4]); // fill colormap
 	      data[i][5] = 0;
 	      data[i][4] = 0;
 	      data[i][6] = 0;
-	      data[i][2] = 4000 + ((p->fields->P-P_m)/(P_M-P_m));
+	      data[i][2] = 4000 + ((p->fields->P-P_m)/(P_M-P_m+1e-5));
 	  	} else{
 	  	  colormap(0.2, &data[i][4]); // fill colormap
 	  	}
@@ -386,9 +386,9 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			bov_text_draw(window, animation->plot_velocity);
 			bov_text_draw(window, animation->plot_light);
 			bov_text_draw(window, animation->plot_liquid);
-			if (iter%10 == 0) {
-				bov_window_screenshot(window, screenshot_name);
-			}
+			// if (iter%10 == 0) {
+			// 	bov_window_screenshot(window, screenshot_name);
+			// }
 			bov_window_update(window);
 		}
 	} else {
@@ -411,7 +411,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			bov_text_draw(window, animation->plot_velocity);
 			bov_text_draw(window, animation->plot_light);
 			bov_text_draw(window, animation->plot_liquid);
-			bov_window_screenshot(window, screenshot_name);
+			// bov_window_screenshot(window, screenshot_name);
 			bov_window_update_and_wait_events(window);
 		}
 	}

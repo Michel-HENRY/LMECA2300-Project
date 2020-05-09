@@ -141,7 +141,7 @@ static int moving_circle(){
   Parameters* param = Parameters_new(mass,kh,Rp);
 
   // Domain
-  int ne = 200;
+  int ne = 100;
   double CR = 0;
   double CF = 0;
   Edges* boundary = EdgesCircle(ne,R,CR,CF);
@@ -186,7 +186,7 @@ static int moving_circle(){
   CSPM_density(p,np,kernel);
 
   double t = 0;
-  double tEnd = 1;
+  double tEnd = 0.5;
   double dt = 1e-4;
   int i = 0;
   while(t < tEnd){
