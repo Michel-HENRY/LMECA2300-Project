@@ -56,12 +56,6 @@ void main() {
 		if(distToCenter < 0.3)
 			outColor.a = 0;
 		outColor.g = 0;
-		/*
-		if(distToCenter > 0.5){
-			outColor.a = 0.8;
-		}else if(distToCenter < 0.5){
-			outColor.a = 0;
-		}*/
 		outColor.a *= alpha.x;
 	} else if(speedGeom.x == -2000){//Shadow particles
 		outColor = m;
@@ -70,9 +64,9 @@ void main() {
 		outColor.a *= alpha.x;		
 	} else if(speedGeom.x >= 4000){//Continious field
 		outColor.r = distToCenter*(speedGeom.x - 4000);
-		outColor.g = 1;//1 - speedGeom.x + 4000;///////////Mettre le bleu evidemment
-		outColor.b = distToCenter;//1 - speedGeom.x + 4000;
-		outColor.a = 0.2;//((distToCenter*distToCenter));/////////////ca ne va pas
+		outColor.g = 1;
+		outColor.b = distToCenter;
+		outColor.a = 0.2;
 		outColor.a *= alpha.x;
 	} else {
 		outColor.g = 0;

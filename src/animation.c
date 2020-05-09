@@ -70,6 +70,7 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, Vector*
 	animation->window = bov_window_new(1024, 780, "Project: SPH");
 	bov_window_set_color(animation->window, (GLfloat[]){0.0, 0.0f, 0.0f, 0.0f});
 	bov_window_enable_help(animation->window);
+	bov_window_set_zoom(animation->window, 0.8);
 
 	GLfloat(*data)[8] = malloc(sizeof(data[0])*n_p);
 	animation->bov_particles = bov_particles_new(data, n_p, GL_DYNAMIC_DRAW);
@@ -98,8 +99,8 @@ Animation* Animation_new(int n_p,double timeout, Grid* grid, double R_p, Vector*
 	free(data3);
 	animation->n_e = n_e;
   	animation->domain = load_Domain(edges, n_e);
-	bov_points_set_width(animation->domain, 0.0005);
-	bov_points_set_color(animation->domain,(GLfloat[]){1.0f, 0.0f, 0.0f, 1.0});
+	bov_points_set_width(animation->domain, 0.01);
+	bov_points_set_color(animation->domain,(GLfloat[]){0.0f, 0.0f, 0.0f, 1.0});
 
 	if (grid != NULL){
 		animation->grid = load_Grid(grid);
@@ -311,24 +312,16 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	bov_window_t* window = animation->window;
 	int nbr = bov_window_get_counter(window);
 	/*
-	if(iter <= 100){
-		nbr = 0;
-	} else if(iter <= 200){
+	if(iter%600 <= 100){
 		nbr = 1;
-	} else if(iter <= 300){
-		nbr = 2;
-	} else if(iter <= 400){
+	} else if(iter%600 <= 200){
 		nbr = 3;
-	} else if(iter <= 500){
+	} else if(iter%600 <= 300){
+		nbr = 2;
+	} else if(iter%600 <= 400){
 		nbr = 4;
-	} else if(iter*1e-5 <= 5){
-		nbr = 1;//4
-	} else if(iter*1e-5 <= 15){
-		nbr = 1;//3
-	} else if(iter*1e-5 <= 22){
-		nbr = 1;
-	} else {
-		nbr = 0;
+	} else{
+		nbr = 5;
 	}*/
 	bov_points_set_width(animation->bov_particles, particles[0]->param->Rp);
 	bov_text_set_color(animation->plot_none, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
@@ -393,7 +386,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 			bov_text_draw(window, animation->plot_velocity);
 			bov_text_draw(window, animation->plot_light);
 			bov_text_draw(window, animation->plot_liquid);
-			if (iter%50 == 0) {
+			if (iter%10 == 0) {
 				bov_window_screenshot(window, screenshot_name);
 			}
 			bov_window_update(window);
