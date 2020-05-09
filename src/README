@@ -1,11 +1,4 @@
-TODO :
-
-  - Kernel Gradient Correction
-  - Free Surface Validation
-  - Calculation optimisation
-  - Higher Order Kernel
-
-
+TO UPDATE !
 Program Structure :
 
     - main.c : sets the testcases. In order to keep the code lisible, some useful function has been written such as fluidProblem() and box().
@@ -44,3 +37,5 @@ Program Structure :
                             P   : float pressure
                             Cs  : float color field
                             rho : float density
+                            
+ If you want to obtain nice light render simulation, you need to go to the branch light_branch.
