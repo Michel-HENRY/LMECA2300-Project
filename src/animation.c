@@ -332,7 +332,7 @@ void show(Particle** particles, Animation* animation, int iter, bool wait, bool 
 	bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.4f, 0.3f, 0.4f, 1.0f});
 	if(nbr%6 == 5){
 		bov_text_set_color(animation->plot_liquid, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
-		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*4);
+		bov_points_set_width(animation->bov_particles, particles[0]->param->Rp*3);
 	} else if(nbr%6 == 4)
 		bov_text_set_color(animation->plot_light, (GLfloat[4]){0.0f, 0.8f, 0.0f, 1.0f});
 	else if(nbr%6 == 3){
