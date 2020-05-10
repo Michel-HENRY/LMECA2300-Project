@@ -10,6 +10,9 @@ It should contain:
  * a **deps** directory containing the BOV library
  * a **shaders** directory containing custom particles shaders.
 
+
+See [src/README.md](src/README.md) for a description of the src directory.
+
 See [doc/COMPILING.md](doc/COMPILING.md) for a step by step tutorial
 on how to build the program.
 
@@ -21,4 +24,3 @@ for help on the BOV library functions.
 
 See [deps/BOV/examples/](deps/BOV/examples/) for more
 examples using the BOV library
-
