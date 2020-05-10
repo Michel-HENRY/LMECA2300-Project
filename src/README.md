@@ -1,7 +1,8 @@
 Program Structure
 ==================
 
-* main.c : sets the testcases. Once all the structure are created, the time integration scheme can begin. Its structure is the following.
+* main.c : sets the testcases. Once all the structure are created, the time integration scheme can begin. Its structure is the following :
+
       1. Update cells
       2. Update neighbors
       3. Compute pressure according a state equation
